@@ -29,6 +29,13 @@ run: ## build executable binary
 	bin/main
 
 #
+# Development
+#
+.PHONY: install-tools
+install-tools: ## install tools for development
+	go install github.com/goreleaser/goreleaser@latest
+
+#
 # Help
 #
 .PHONY: help
