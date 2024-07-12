@@ -1,3 +1,6 @@
+# https://github.com/tmknom/makefiles
+.makefiles/
+
 # Output of the executable binaries
 bin/
 
