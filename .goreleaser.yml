@@ -52,6 +52,3 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
-
-sboms:
-  - artifacts: archive
