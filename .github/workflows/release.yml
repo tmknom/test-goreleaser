@@ -40,7 +40,7 @@ jobs:
         id: bump
         uses: tmknom/bump-version-action@8c78f9030b57d734890c5009480417f1d660ef37 # v0.1.0
         with:
-          bump-level: ${{ inputs.bump-level }}
+          bump-level: ${{ inputs.level }}
 
       - name: Push version tag
         env:
