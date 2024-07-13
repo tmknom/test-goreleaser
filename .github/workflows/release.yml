@@ -11,6 +11,11 @@ on:
           - minor
           - major
         default: minor
+      version-file:
+        type: string
+        default: go.mod
+        required: false
+        description: The version file path for Go, such as go.mod or .go-version.
 
 concurrency: ${{ github.workflow }}
 
@@ -36,7 +41,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
-          go-version-file: go.mod
+          go-version-file: ${{ inputs.version-file }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
