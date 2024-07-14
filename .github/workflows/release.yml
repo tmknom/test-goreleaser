@@ -15,20 +15,16 @@ on:
         type: string
         default: go.mod
         required: false
-        description: The version file path for Go, such as go.mod or .go-version.
+        description: Path to the version file for Go, such as .go-version, go.mod or go.work.
 
 concurrency: ${{ github.workflow }}
 
 permissions: {}
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   release:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     permissions:
       contents: write
       packages: write
