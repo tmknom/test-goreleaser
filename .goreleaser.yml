@@ -48,7 +48,7 @@ signs:
       - --output-certificate
       - ${certificate}
       - --oidc-provider
-      - github
+      - github-actions
       - ${artifact}
 
 changelog:
