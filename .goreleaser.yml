@@ -34,6 +34,23 @@ archives:
       - goos: windows
         format: zip
 
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    signature: ${artifact}.sig
+    certificate: ${artifact}.pem
+    output: true
+    args:
+      - sign-blob
+      - "-y"
+      - --output-signature
+      - ${signature}
+      - --output-certificate
+      - ${certificate}
+      - --oidc-provider
+      - github
+      - ${artifact}
+
 changelog:
   use: github-native
 
