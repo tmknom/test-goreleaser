@@ -47,7 +47,7 @@ signs:
       - ${signature}
       - --output-certificate
       - ${certificate}
-      - --oidc-provider
+      - --oidc-issuer
       - https://token.actions.githubusercontent.com
       - ${artifact}
 
