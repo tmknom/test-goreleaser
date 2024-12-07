@@ -1,3 +1,3 @@
 module github.com/tmknom/test-goreleaser
 
-go 1.20
+go 1.22.4
