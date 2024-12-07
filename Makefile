@@ -34,3 +34,9 @@ install-tools: ## install tools for development
 # Targets: Release
 .PHONY: release
 release: release/run ## Start release process
+
+.PHONY: lint
+lint: lint/workflow lint/yaml lint/shell ## Lint workflow files, YAML files and shell files
+
+.PHONY: fmt
+fmt: fmt/yaml fmt/shell ## Format YAML files and shell files
