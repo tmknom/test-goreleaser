@@ -47,8 +47,10 @@ signs:
       - ${signature}
       - --output-certificate
       - ${certificate}
-      - --annotations
-      - workflow-sha={{ .Env.GITHUB_WORKFLOW_SHA }}
+      - --oidc-issuer
+      - https://token.actions.githubusercontent.com
+      - --oidc-provider
+      - github-actions
       - ${artifact}
 
 changelog:
