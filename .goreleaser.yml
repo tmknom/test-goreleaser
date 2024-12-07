@@ -50,7 +50,7 @@ signs:
       - --oidc-issuer
       - https://token.actions.githubusercontent.com
       - --oidc-provider
-      - github
+      - github-actions
       - ${artifact}
 
 changelog:
