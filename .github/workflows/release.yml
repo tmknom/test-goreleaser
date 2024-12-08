@@ -61,6 +61,7 @@ jobs:
           password: ${{ github.token }}
 
       - name: Run GoReleaser
+        id: goreleaser
         uses: goreleaser/goreleaser-action@9ed2f89a662bf1735a48bc8557fd212fa902bebf # v6.1.0
         with:
           distribution: goreleaser
@@ -78,3 +79,19 @@ jobs:
             dist/*.txt
             dist/*.pem
             dist/*.sig
+
+      - name: Describe manifest
+        id: manifest
+        env:
+          ARTIFACTS: ${{ steps.goreleaser.outputs.artifacts }}
+        run: |
+          set -x
+          digest="$(jq -r '. | map(select(.type=="Docker Manifest"))[0] | .extra.Digest' <<<"${ARTIFACTS}")"
+          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+
+      - name: Attest container images
+        uses: actions/attest-build-provenance@c4fbc648846ca6f503a13a2281a5e7b98aa57202 # v2.0.1
+        with:
+          subject-name: ghcr.io/${{ github.repository }}
+          subject-digest: ${{ steps.manifest.outputs.digest }}
+          push-to-registry: true
