@@ -100,7 +100,7 @@ docker_manifests:
 
 docker_signs:
   - cmd: cosign
-    artifacts: all
+    artifacts: manifests
     output: true
     args:
       - sign
