@@ -11,7 +11,7 @@ on:
           - minor
           - major
         default: minor
-      version-file:
+      go-version-file:
         type: string
         default: go.mod
         required: false
