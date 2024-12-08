@@ -4,39 +4,67 @@
 	@git clone https://github.com/tmknom/makefiles.git .makefiles >/dev/null 2>&1
 
 # Variables: Go
-VERSION ?= 0.0.1
-ROOT_DIR ?= $(shell \git rev-parse --show-toplevel)
-NAME = $(shell \basename $(ROOT_DIR))
-OWNER = $(shell \gh config get -h github.com user)
+REPO_ORIGIN ?= $(shell \git config --get remote.origin.url)
+REPO_NAME = $(shell \basename -s .git $(REPO_ORIGIN))
+REPO_OWNER = $(shell \gh config get -h github.com user)
+VERSION = $(shell \git tag --sort=-v:refname | head -1)
 COMMIT = $(shell \git rev-parse HEAD)
 DATE = $(shell \date +"%Y-%m-%d")
-URL = https://github.com/$(OWNER)/$(NAME)
-LDFLAGS ?= "-X main.name=$(NAME) -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE) -X main.url=$(URL)"
+URL = https://github.com/$(REPO_OWNER)/$(REPO_NAME)/releases/tag/$(VERSION)
+LDFLAGS ?= "-X main.name=$(REPO_NAME) -X main.version=$(VERSION) -X main.commit=$(COMMIT) -X main.date=$(DATE) -X main.url=$(URL)"
 
-#
-# Build and run
-#
+# Targets: Go
+.PHONY: all
+all: mod build test-all run ## all
+
+.PHONY: mod
+mod: ## manage modules
+	go mod tidy
+	go mod verify
+
+.PHONY: deps
+deps:
+	go mod download
+
 .PHONY: build
-build: ## build executable binary
-	go build -ldflags=$(LDFLAGS) -o bin/$(NAME) ./cmd/$(NAME)
+build: deps ## build executable binary
+	go build -ldflags=$(LDFLAGS) -o bin/$(REPO_NAME) ./cmd/$(REPO_NAME)
+
+.PHONY: install
+install: deps ## install
+	go install -ldflags=$(LDFLAGS) ./cmd/$(REPO_NAME)
 
 .PHONY: run
-run: ## build executable binary
-	bin/$(NAME)
+run: build ## run command
+	bin/$(REPO_NAME) --exactly-length "a" --digit --value "12345678901a" || true
+	VALID_DEBUG=true bin/$(REPO_NAME) --min-length "1" --max-length "12" --pattern '^[\w+=,.@-]+$$' --value 'example-iam-role+=,.@-<>' || true
 
-#
-# Development
-#
+.PHONY: test
+test: lint ## test
+	go test ./...
+
+.PHONY: lint
+lint: goimports vet ## lint go
+
+.PHONY: vet
+vet: ## static analysis by vet
+	go vet ./...
+
+.PHONY: goimports
+goimports: ## update import lines
+	goimports -w .
+
 .PHONY: install-tools
 install-tools: ## install tools for development
-	go install github.com/goreleaser/goreleaser@latest
+	go install golang.org/x/tools/cmd/goimports@latest
+
+# Targets: GitHub Actions
+.PHONY: lint-gha
+lint-gha: lint/workflow lint/yaml ## Lint workflow files and YAML files
+
+.PHONY: fmt-gha
+fmt-gha: fmt/yaml ## Format YAML files
 
 # Targets: Release
 .PHONY: release
 release: release/run ## Start release process
-
-.PHONY: lint
-lint: lint/workflow lint/yaml lint/shell ## Lint workflow files, YAML files and shell files
-
-.PHONY: fmt
-fmt: fmt/yaml fmt/shell ## Format YAML files and shell files
