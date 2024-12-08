@@ -1,9 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"os"
+
+	"github.com/tmknom/test-goreleaser/internal"
 )
 
+// Specify explicitly in ldflags
+// For full details, see Makefile and .goreleaser.yml
 var (
 	name    = ""
 	version = ""
@@ -13,5 +20,19 @@ var (
 )
 
 func main() {
-	fmt.Printf("%s %s %s %s\n%s\n", name, version, commit, date, url)
+	if err := run(); err != nil {
+		log.Fatalf("%+v", err)
+	}
+}
+
+func run() error {
+	ctx := context.Background()
+	io := &internal.IO{
+		InReader:  os.Stdin,
+		OutWriter: os.Stdout,
+		ErrWriter: os.Stderr,
+	}
+	internal.AppName = name
+	internal.AppVersion = fmt.Sprintf("%s version %s (%s:%s)\n%s\n", name, version, commit, date, url)
+	return internal.NewApp(io).Run(ctx, os.Args[1:])
 }
