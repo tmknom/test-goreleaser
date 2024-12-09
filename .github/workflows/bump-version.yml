@@ -1,0 +1,27 @@
+name: Bump Version
+on:
+  workflow_dispatch:
+    inputs:
+      bump-level:
+        type: choice
+        required: true
+        description: Bump up to [patch / minor / major]
+        options:
+          - patch
+          - minor
+          - major
+        default: minor
+
+concurrency: ${{ github.workflow }}
+
+permissions: {}
+
+jobs:
+  call:
+    uses: ./.github/workflows/reusable-bump-version.yml
+    with:
+      bump-level: ${{ inputs.bump-level }}
+    secrets:
+      app-id: ${{ secrets.APP_ID }}
+      app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
+    permissions: {}
