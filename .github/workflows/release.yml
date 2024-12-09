@@ -1,8 +1,16 @@
 name: Release
 on:
-  push:
-    tags:
-      - v*
+  workflow_dispatch:
+    inputs:
+      bump-level:
+        type: choice
+        required: true
+        description: Bump up to [patch / minor / major]
+        options:
+          - patch
+          - minor
+          - major
+        default: minor
 
 concurrency: ${{ github.workflow }}
 
@@ -11,6 +19,8 @@ permissions: {}
 jobs:
   call:
     uses: ./.github/workflows/reusable-release.yml
+    with:
+      bump-level: ${{ inputs.bump-level }}
     permissions:
       contents: write
       packages: write
