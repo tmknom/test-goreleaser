@@ -67,4 +67,42 @@ fmt-gha: fmt/yaml ## Format YAML files
 
 # Targets: Release
 .PHONY: release
-release: release/run ## Start release process
+release: bump/run ## Start release process
+
+BUMP_VERSION_WORKFLOW ?= bump-version.yml
+
+# Targets
+.PHONY: bump/run
+bump/run: ### Run bump version workflow
+	@read -p "Bump up to (patch / minor / major): " answer && \
+	case "$${answer}" in \
+		'patch') make bump/patch ;; \
+		'minor') make bump/minor ;; \
+		'major') make bump/major ;; \
+		*) echo "Error: invalid parameter: $${answer}"; exit 1 ;; \
+	esac
+
+.PHONY: bump/patch
+bump/patch: ### Bump patch version
+	$(GH) workflow run $(BUMP_VERSION_WORKFLOW) -f bump-level=patch || true
+	make bump/show
+
+.PHONY: bump/minor
+bump/minor: ### Bump minor version
+	$(GH) workflow run $(BUMP_VERSION_WORKFLOW) -f bump-level=minor || true
+	make bump/show
+
+.PHONY: bump/major
+bump/major: ### Bump major version
+	@read -p "Confirm major version upgrade? (y/N):" answer && \
+	case "$${answer}" in \
+	  [yY]*) $(GH) workflow run $(BUMP_VERSION_WORKFLOW) -f bump-level=major; make bump/show ;; \
+	  *) echo "Cancel major version upgrade." ;; \
+	esac
+
+.PHONY: bump/show
+bump/show:
+	@echo 'Starting bump...'
+	@sleep 5
+	@id=$$($(GH) run list --limit 1 --json databaseId --jq '.[0].databaseId' --workflow $(BUMP_VERSION_WORKFLOW)) && \
+	$(GH) run watch $${id}
