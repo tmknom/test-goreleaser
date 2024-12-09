@@ -65,6 +65,10 @@ lint-gha: lint/workflow lint/yaml ## Lint workflow files and YAML files
 .PHONY: fmt-gha
 fmt-gha: fmt/yaml ## Format YAML files
 
+# Targets: Release
+.PHONY: release
+release: release/run ## Start release process
+
 # Targets: Bump
 .PHONY: bump
 bump: bump/run ## Start bump process

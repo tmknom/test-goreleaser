@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       bump-level:
-        type: choice
+        type: string
         required: true
         description: Bump up to [patch / minor / major]
       go-version-file:
