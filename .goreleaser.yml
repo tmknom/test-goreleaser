@@ -23,8 +23,9 @@ builds:
       - -X main.name={{.ProjectName}}
       - -X main.version={{.Version}}
       - -X main.commit={{.FullCommit}}
-      - -X main.date={{.Date}}
+      - -X main.date={{.CommitDate}}
       - -X main.url={{.GitURL}}
+    mod_timestamp: "{{.CommitTimestamp}}"
     main: ./cmd/{{.ProjectName}}
 
 archives:
