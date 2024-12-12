@@ -62,10 +62,18 @@ release:
   footer: |
     ---
 
-    ## Download binaries
+    ## Download
+
+    ### Binaries
 
     ```shell
     gh release download {{.Version}}
+    ```
+
+    ### Container images
+
+    ```shell
+    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }}
     ```
 
     ## Strictly verify binaries
@@ -107,16 +115,16 @@ release:
       --certificate-identity-regexp "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$" \
       --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
       --certificate-github-workflow-sha "{{ .FullCommit }}" \
-      ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }}
+      ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }}
 
     jq -r '.[0].critical.image."docker-manifest-digest"' <<<"${COSIGN_JSON}"
-    docker inspect ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }} | jq -r '.[0].RepoDigests[0]' | cut -d '@' -f 2
+    docker inspect ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }} | jq -r '.[0].RepoDigests[0]' | cut -d '@' -f 2
     ```
 
     ### GitHub Attestations
 
     ```shell
-    gh attestation verify oci://ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }} \
+    gh attestation verify oci://ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }} \
       --deny-self-hosted-runners \
       --repo "{{ .Env.GITHUB_REPOSITORY }}" \
       --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
