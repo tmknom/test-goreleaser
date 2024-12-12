@@ -50,6 +50,10 @@ signs:
       - --yes
       - ${artifact}
 
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
 changelog:
   use: github-native
 
