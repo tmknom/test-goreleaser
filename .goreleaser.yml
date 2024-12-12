@@ -22,7 +22,7 @@ builds:
       - -s -w
       - -X main.name={{.ProjectName}}
       - -X main.version={{.Version}}
-      - -X main.commit={{.Commit}}
+      - -X main.commit={{.FullCommit}}
       - -X main.date={{.Date}}
       - -X main.url={{.GitURL}}
     main: ./cmd/{{.ProjectName}}
