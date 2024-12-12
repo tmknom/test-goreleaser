@@ -37,7 +37,7 @@ archives:
 
 signs:
   - cmd: cosign
-    artifacts: checksum
+    artifacts: all
     signature: ${artifact}.sig
     certificate: ${artifact}.pem
     output: true
