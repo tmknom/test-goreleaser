@@ -195,3 +195,6 @@ docker_signs:
       - --oidc-provider=github-actions
       - --yes
       - ${artifact}@${digest}
+
+sboms:
+  - artifacts: binary
