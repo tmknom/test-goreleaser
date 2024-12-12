@@ -70,7 +70,7 @@ release:
     ### Binaries
 
     ```shell
-    gh release download {{.Version}}
+    gh release download v{{ .Version }}
     ```
 
     ### Container images
@@ -119,9 +119,6 @@ release:
       --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
       --certificate-github-workflow-sha "{{ .FullCommit }}" \
       ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }}
-
-    jq -r '.[0].critical.image."docker-manifest-digest"' <<<"${COSIGN_JSON}"
-    docker inspect ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }} | jq -r '.[0].RepoDigests[0]' | cut -d '@' -f 2
     ```
 
     ### GitHub Attestations
