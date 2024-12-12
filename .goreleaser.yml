@@ -28,6 +28,9 @@ builds:
     mod_timestamp: "{{.CommitTimestamp}}"
     main: ./cmd/{{.ProjectName}}
 
+gomod:
+  proxy: true
+
 archives:
   - format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
