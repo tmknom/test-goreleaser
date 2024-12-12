@@ -60,22 +60,68 @@ changelog:
 release:
   mode: append
   footer: |
-    ## Verify binary
+    ---
+
+    ## Download binaries
 
     ```shell
-    cosign verify-blob --verbose \
-      --signature "{{.ProjectName}}_{{.Version}}_checksums.txt.sig" \
-      --certificate "{{.ProjectName}}_{{.Version}}_checksums.txt.pem" \
-      --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-      "{{.ProjectName}}_{{.Version}}_checksums.txt"
-
-    sha256sum --ignore-missing -c "{{.ProjectName}}_{{.Version}}_checksums.txt"
+    gh release download {{.Version}}
     ```
 
-  # Set this to true if you want to disable just the artifact upload to the SCM.
-  # If this is true, GoReleaser will still create the release with the
-  # changelog, but won't upload anything to it.
-  # skip_upload: true
+    ## Strictly verify binaries
+
+    ### Cosign
+
+    ```shell
+    cosign verify-blob \
+      --signature "{{ .ProjectName }}_{{ .Version }}_checksums.txt.sig" \
+      --certificate "{{ .ProjectName }}_{{ .Version }}_checksums.txt.pem" \
+      --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+      --certificate-identity-regexp "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$" \
+      --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
+      --certificate-github-workflow-sha "{{ .FullCommit }}" \
+      "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+
+    sha256sum --ignore-missing -c "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+    ```
+
+    ### GitHub Attestations
+
+    ```shell
+    gh attestation verify {{ .ProjectName }}_{{ .Version }}_checksums.txt \
+      --deny-self-hosted-runners \
+      --repo "{{ .Env.GITHUB_REPOSITORY }}" \
+      --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
+      --cert-identity-regex "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$"
+
+    sha256sum --ignore-missing -c "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+    ```
+
+    ## Strictly verify container images
+
+    ### Cosign
+
+    ```shell
+    cosign verify \
+      --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+      --certificate-identity-regexp "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$" \
+      --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
+      --certificate-github-workflow-sha "{{ .FullCommit }}" \
+      ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }}
+
+    jq -r '.[0].critical.image."docker-manifest-digest"' <<<"${COSIGN_JSON}"
+    docker inspect ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }} | jq -r '.[0].RepoDigests[0]' | cut -d '@' -f 2
+    ```
+
+    ### GitHub Attestations
+
+    ```shell
+    gh attestation verify oci://ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Version }} \
+      --deny-self-hosted-runners \
+      --repo "{{ .Env.GITHUB_REPOSITORY }}" \
+      --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
+      --cert-identity-regex "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$"
+    ```
 
 dockers:
   - image_templates:
