@@ -90,12 +90,14 @@ dockers:
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.description={{.ProjectName}} {{.Version}}"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.url={{.ReleaseURL}}"
       - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--label=org.opencontainers.image.documentation={{.GitURL}}/blob/main/README.md"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
       - "--platform=linux/amd64"
   - image_templates:
       - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-arm64"
@@ -107,12 +109,14 @@ dockers:
     build_flag_templates:
       - "--pull"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
+      - "--label=org.opencontainers.image.description={{.ProjectName}} {{.Version}}"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.url={{.ReleaseURL}}"
       - "--label=org.opencontainers.image.source={{.GitURL}}"
       - "--label=org.opencontainers.image.documentation={{.GitURL}}/blob/main/README.md"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
       - "--platform=linux/arm64"
 
 docker_manifests:
