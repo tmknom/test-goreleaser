@@ -60,8 +60,6 @@ changelog:
 
 release:
   mode: append
-  include_meta: true
-
   footer: |
     ## Verify binary
 
