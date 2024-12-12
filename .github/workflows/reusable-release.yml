@@ -1,11 +1,11 @@
-name: Reusable Release
+name: Release Go
 on:
   workflow_call:
     inputs:
       bump-level:
         type: string
         required: true
-        description: Bump up to [patch / minor / major]
+        description: Determines which part of the version to increment [patch/minor/major]
       go-version-file:
         type: string
         default: go.mod
