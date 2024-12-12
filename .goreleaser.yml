@@ -32,12 +32,14 @@ gomod:
   proxy: true
 
 archives:
-  - format: tar.gz
+  - id: archive
+    format: tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows
         format: zip
-  - format: binary
+  - id: binary
+    format: binary
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 signs:
