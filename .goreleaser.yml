@@ -20,13 +20,13 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X main.name={{.ProjectName}}
-      - -X main.version={{.Version}}
-      - -X main.commit={{.FullCommit}}
-      - -X main.date={{.CommitDate}}
-      - -X main.url={{.GitURL}}
-    mod_timestamp: "{{.CommitTimestamp}}"
-    main: ./cmd/{{.ProjectName}}
+      - -X main.name={{ .ProjectName }}
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .FullCommit }}
+      - -X main.date={{ .CommitDate }}
+      - -X main.url={{ .GitURL }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    main: ./cmd/{{ .ProjectName }}
 
 gomod:
   proxy: true
@@ -143,14 +143,14 @@ dockers:
     skip_push: false
     build_flag_templates:
       - "--pull"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.description={{.ProjectName}} {{.Version}}"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.url={{.ReleaseURL}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--label=org.opencontainers.image.documentation={{.GitURL}}/blob/main/README.md"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description={{ .ProjectName }} {{ .Version }}"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.url={{ .ReleaseURL }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.documentation={{ .GitURL }}/blob/main/README.md"
       - "--label=org.opencontainers.image.licenses=Apache-2.0"
       - "--platform=linux/amd64"
   - image_templates:
@@ -162,14 +162,14 @@ dockers:
     skip_push: false
     build_flag_templates:
       - "--pull"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.description={{.ProjectName}} {{.Version}}"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.url={{.ReleaseURL}}"
-      - "--label=org.opencontainers.image.source={{.GitURL}}"
-      - "--label=org.opencontainers.image.documentation={{.GitURL}}/blob/main/README.md"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description={{ .ProjectName }} {{ .Version }}"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.url={{ .ReleaseURL }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.documentation={{ .GitURL }}/blob/main/README.md"
       - "--label=org.opencontainers.image.licenses=Apache-2.0"
       - "--platform=linux/arm64"
 
