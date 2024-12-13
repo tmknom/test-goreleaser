@@ -46,6 +46,22 @@ checksum:
   name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
   algorithm: sha256
 
+nfpms:
+  - package_name: "{{ .ProjectName }}"
+    file_name_template: "{{ .ConventionalFileName }}"
+    homepage: "{{ .GitURL }}"
+    maintainer: "{{ .Env.GITHUB_REPOSITORY_OWNER }} {{ .Env.GITHUB_REPOSITORY_OWNER_ID }}+{{ .Env.GITHUB_REPOSITORY_OWNER }}@users.noreply.github.com"
+    description: "{{ .ProjectName }} {{ .Version }}"
+    license: "Apache License 2.0"
+    formats:
+      - apk
+      - deb
+      - rpm
+    contents:
+      - src: /usr/bin/{{ .ProjectName }}_{{ .Version }}_linux_{{ .Arch }}
+        dst: /usr/bin/{{ .ProjectName }}
+        type: "symlink"
+
 dockers:
   - image_templates:
       - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-amd64"
