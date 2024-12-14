@@ -109,4 +109,4 @@ bump/show:
 	@echo 'Starting bump...'
 	@sleep 5
 	@id=$$($(GH) run list --limit 1 --json databaseId --jq '.[0].databaseId' --workflow $(BUMP_VERSION_WORKFLOW)) && \
-	$(GH) run watch $${id}
+	$(GH) run view $${id} --web
