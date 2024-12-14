@@ -153,7 +153,7 @@ docker_signs:
 # "buildSignerDigest": "46faec918d673d4c68d8d6525d07272b8115f1d6",
 
 sboms:
-  - artifacts: binary
+  - artifacts: any
 
 changelog:
   use: github-native
