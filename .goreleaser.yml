@@ -1,5 +1,8 @@
 version: 2
 
+env:
+  - SOURCE_DATE_EPOCH={{ .CommitTimestamp }}
+
 before:
   hooks:
     - go generate ./...
