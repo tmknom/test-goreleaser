@@ -91,7 +91,7 @@ jobs:
           echo "manifest-digest=${manifest_digest}" >> "${GITHUB_OUTPUT}"
 
           checksum_file="$(jq -r '.[] | select (.type=="Checksum") | .path' <<<"${ARTIFACTS}")"
-          checksum_hashes="$(base64 -w0 --input "${checksum_file}")"
+          checksum_hashes="$(base64 -w0 "${checksum_file}")"
           echo "checksum-hashes=${checksum_hashes}" >> "${GITHUB_OUTPUT}"
 
       - name: Attest container images
