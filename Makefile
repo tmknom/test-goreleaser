@@ -73,7 +73,7 @@ release: release/run ## Start release process
 .PHONY: bump
 bump: bump/run ## Start bump process
 
-BUMP_VERSION_WORKFLOW ?= bump-version.yml
+BUMP_VERSION_WORKFLOW ?= release.yml
 
 # Targets
 .PHONY: bump/run
