@@ -57,10 +57,6 @@ nfpms:
       - apk
       - deb
       - rpm
-    contents:
-      - src: /usr/bin/{{ .ProjectName }}_{{ .Version }}_linux_{{ .Arch }}
-        dst: /usr/bin/{{ .ProjectName }}
-        type: "symlink"
 
 dockers:
   - image_templates:
