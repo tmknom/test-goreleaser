@@ -1,0 +1,30 @@
+name: Test
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: [".github/workflows/test.yml"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  install-deb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
+
+      - name: Install
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          gh release download v0.12.1
+          sudo dpkg -i test-goreleaser_0.12.1_amd64.deb
+          test-goreleaser --help
