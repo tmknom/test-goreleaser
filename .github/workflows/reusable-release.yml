@@ -27,6 +27,8 @@ jobs:
       packages: write
       id-token: write
       attestations: write
+    outputs:
+      checksum-hashes: ${{ steps.metadata.outputs.checksum-hashes }}
     steps:
       - name: Check actor access
         if: ${{ github.repository_owner != github.actor }}
@@ -79,18 +81,34 @@ jobs:
         with:
           subject-path: dist/
 
-      - name: Describe manifest
-        id: manifest
+      - name: Generate metadata
+        id: metadata
         env:
           ARTIFACTS: ${{ steps.goreleaser.outputs.artifacts }}
         run: |
           set -x
-          digest="$(jq -r '. | map(select(.type=="Docker Manifest"))[0] | .extra.Digest' <<<"${ARTIFACTS}")"
-          echo "digest=${digest}" >> "$GITHUB_OUTPUT"
+          manifest_digest="$(jq -r '. | map(select(.type=="Docker Manifest"))[0] | .extra.Digest' <<<"${ARTIFACTS}")"
+          echo "manifest-digest=${manifest_digest}" >> "${GITHUB_OUTPUT}"
+
+          checksum_file="$(jq -r '.[] | select (.type=="Checksum") | .path' <<<"${ARTIFACTS}")"
+          checksum_hashes="$(base64 -w0 --input "${checksum_file}")"
+          echo "checksum-hashes=${checksum_hashes}" >> "${GITHUB_OUTPUT}"
 
       - name: Attest container images
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
         with:
           subject-name: ghcr.io/${{ github.repository }}
-          subject-digest: ${{ steps.manifest.outputs.digest }}
+          subject-digest: ${{ steps.metadata.outputs.manifest-digest }}
           push-to-registry: true
+
+  provenance:
+    # Must be referenced by a tag. https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/container/README.md#referencing-the-slsa-generator
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+    with:
+      base64-subjects: "${{ needs.release.outputs.checksum-hashes }}"
+      upload-assets: true
+    permissions:
+      contents: write
+      id-token: write
+      actions: read
+    needs: [release]
