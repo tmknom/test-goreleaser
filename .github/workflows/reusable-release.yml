@@ -28,6 +28,7 @@ jobs:
       id-token: write
       attestations: write
     outputs:
+      version: ${{ steps.bump.outputs.version }}
       checksum-hashes: ${{ steps.metadata.outputs.checksum-hashes }}
     steps:
       - name: Check actor access
@@ -105,7 +106,8 @@ jobs:
     # Must be referenced by a tag. https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/container/README.md#referencing-the-slsa-generator
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
     with:
-      base64-subjects: "${{ needs.release.outputs.checksum-hashes }}"
+      base64-subjects: ${{ needs.release.outputs.checksum-hashes }}
+      upload-tag-name: ${{ needs.release.outputs.version }}
       upload-assets: true
     permissions:
       contents: write
