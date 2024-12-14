@@ -131,6 +131,12 @@ docker_signs:
       - sign
       - --oidc-issuer=https://token.actions.githubusercontent.com
       - --oidc-provider=github-actions
+      - --annotations="repository=${{ .Env.GITHUB_REPOSITORY }}"
+      - --annotations="sha={{ .FullCommit }}"
+      - --annotations="artifact=${artifact}"
+      - --annotations="digest=${digest}"
+      - --annotations="artifactID=${artifactID}"
+      - --annotations="certificate=${certificate}"
       - --yes
       - ${artifact}@${digest}
 
