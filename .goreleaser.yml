@@ -48,7 +48,7 @@ checksum:
 
 nfpms:
   - package_name: "{{ .ProjectName }}"
-    file_name_template: "{{ .ConventionalFileName }}"
+    file_name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ .Arch }}"
     homepage: "{{ .GitURL }}"
     maintainer: "{{ .Env.GITHUB_REPOSITORY_OWNER }} {{ .Env.GITHUB_REPOSITORY_OWNER_ID }}+{{ .Env.GITHUB_REPOSITORY_OWNER }}@users.noreply.github.com"
     description: "{{ .ProjectName }} {{ .Version }}"
