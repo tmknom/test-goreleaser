@@ -157,10 +157,10 @@ sboms:
     artifacts: binary
     documents:
       - "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"
+  - id: package
+    artifacts: package
   - id: source
     artifacts: source
-    documents:
-      - "{{ .ProjectName }}_{{ .Version }}_source.sbom.json"
 
 changelog:
   use: github-native
