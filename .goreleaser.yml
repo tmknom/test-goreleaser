@@ -154,6 +154,8 @@ docker_signs:
 
 sboms:
   - artifacts: any
+    documents:
+      - "${artifact}.sbom.json"
 
 changelog:
   use: github-native
