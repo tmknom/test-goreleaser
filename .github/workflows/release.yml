@@ -24,6 +24,7 @@ jobs:
     with:
       bump-level: ${{ inputs.bump-level }}
       homebrew-tap-repository: homebrew-test-tap
+      app-private-key-fingerprint: ${{ vars.APP_PRIVATE_KEY_FINGERPRINT }}
     secrets:
       app-id: ${{ secrets.APP_ID }}
       app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
