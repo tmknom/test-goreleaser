@@ -14,7 +14,7 @@ on:
       homebrew-tap-repository:
         type: string
         required: false
-        description: The repository of Homebrew tap.
+        description: The repository for Homebrew formulae used to install tools on macOS.
     secrets:
       app-id:
         required: false
