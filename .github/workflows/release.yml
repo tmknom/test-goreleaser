@@ -23,7 +23,7 @@ jobs:
     # uses: tmknom/release-workflows/.github/workflows/go.yml@307f3a562bf3a75d06e23a928a6316a98aa57651 # v0.7.0
     with:
       bump-level: ${{ inputs.bump-level }}
-#      homebrew-tap-repository: homebrew-tap
+      homebrew-tap-repository: homebrew-test-tap
     secrets:
       app-id: ${{ secrets.APP_ID }}
       app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
