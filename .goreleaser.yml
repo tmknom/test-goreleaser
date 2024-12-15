@@ -59,9 +59,9 @@ brews:
       owner: "{{ .Env.GITHUB_REPOSITORY_OWNER }}"
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      pull_request:
+        enabled: true
     directory: Formula
-    pull_request:
-      enabled: true
     homepage: "{{ .GitURL }}"
     test: |
       system "#{bin}/{{ .ProjectName }} --version"
