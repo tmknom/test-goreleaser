@@ -57,7 +57,7 @@ nfpms:
 brews:
   - repository:
       owner: "{{ .Env.GITHUB_REPOSITORY_OWNER }}"
-      name: "{{ if isEnvSet "HOMEBREW_TAP_REPOSITORY" }}{{ .Env.HOMEBREW_TAP_REPOSITORY }}{{ else }}homebrew-tap{{ end }}"
+      name: "{{ if isEnvSet \"HOMEBREW_TAP_REPOSITORY\" }}{{ .Env.HOMEBREW_TAP_REPOSITORY }}{{ else }}homebrew-tap{{ end }}"
       branch: update/{{ .ProjectName }}_{{ .Version }}
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
       pull_request:
