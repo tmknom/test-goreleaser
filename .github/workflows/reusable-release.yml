@@ -98,7 +98,7 @@ jobs:
         with:
           distribution: goreleaser
           version: ~> v2
-          args: release --clean --verbose
+          args: release --clean --debug
         env:
           GITHUB_TOKEN: ${{ github.token }}
           HOMEBREW_TAP_REPOSITORY: ${{ inputs.homebrew-tap-repository }}
