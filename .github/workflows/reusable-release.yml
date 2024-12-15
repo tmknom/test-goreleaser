@@ -11,6 +11,10 @@ on:
         default: go.mod
         required: false
         description: Path to the version file for Go, such as .go-version, go.mod or go.work.
+      homebrew-tap-repository:
+        type: string
+        required: false
+        description: The repository of Homebrew tap.
     secrets:
       app-id:
         required: false
@@ -97,6 +101,7 @@ jobs:
           args: release --clean --verbose
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          HOMEBREW_TAP_REPOSITORY: ${{ inputs.homebrew-tap-repository }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ steps.app.outputs.token }}
 
       - name: Attest binaries
