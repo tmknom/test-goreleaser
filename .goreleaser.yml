@@ -125,18 +125,32 @@ docker_signs:
     output: true
     args:
       - sign
+      - --annotations="sourceRepositoryDigest={{ .FullCommit }}"
+      - --annotations="sourceRepositoryRef={{ .Env.GITHUB_REF }}"
+      - --annotations="sourceRepositoryURI={{ .GitURL }}"
+      - --annotations="sourceRepositoryIdentifier={{ .Env.GITHUB_REPOSITORY_ID }}"
+      - --annotations="sourceRepositoryOwnerURI={{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY_OWNER }}"
+      - --annotations="sourceRepositoryOwnerIdentifier={{ .Env.GITHUB_REPOSITORY_OWNER_ID }}"
+      - --annotations="runnerEnvironment={{ .Env.RUNNER_ENVIRONMENT }}"
+      - --annotations="runInvocationURI={{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/actions/runs/{{ .Env.GITHUB_RUN_ID }}/attempts/{{ .Env.GITHUB_RUN_ATTEMPT }}"
+      - --annotations="buildConfigURI={{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_WORKFLOW_REF }}"
+      - --annotations="buildConfigDigest={{ .Env.GITHUB_WORKFLOW_SHA }}"
+      - --annotations="buildTrigger={{ .Env.GITHUB_EVENT_NAME }}"
+      - --annotations="_releaseTag=v{{ .Version }}"
+      - --annotations="_releaseURL={{ .ReleaseURL }}"
+      - --annotations="_releaseDate={{ .CommitDate }}"
+      - --annotations="_releaseRepository={{ .Env.GITHUB_REPOSITORY }}"
+      - --annotations="_imageName=${artifact}"
+      - --annotations="_imageTag={{ .Tag }}"
+      - --annotations="_imageDigest=${digest}"
       - --oidc-issuer=https://token.actions.githubusercontent.com
       - --oidc-provider=github-actions
-      - --annotations="_version={{ .Version }}"
-      - --annotations="_sourceURL={{ .GitURL }}"
-      - --annotations="_sourceRepository={{ .Env.GITHUB_REPOSITORY }}"
-      - --annotations="_sourceCommitSHA={{ .FullCommit }}"
-      - --annotations="_sourceCommitDate={{ .CommitDate }}"
-      - --annotations="_imageName=${artifact}"
-      - --annotations="_imageDigest=${digest}"
-      - --annotations="_imageURL={{ .ReleaseURL }}"
       - --yes
       - ${artifact}@${digest}
+
+# TODO
+# "buildSignerURI": "https://github.com/tmknom/test-goreleaser/.github/workflows/reusable-release.yml@refs/heads/main",
+# "buildSignerDigest": "46faec918d673d4c68d8d6525d07272b8115f1d6",
 
 sboms:
   - artifacts: binary
