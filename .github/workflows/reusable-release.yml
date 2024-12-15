@@ -15,13 +15,17 @@ on:
         type: string
         required: false
         description: The repository for Homebrew formulae used to install tools on macOS.
+      app-private-key-fingerprint:
+        type: string
+        required: false
+        description: The fingerprint of the private key for GitHub Apps.
     secrets:
       app-id:
         required: false
         description: GitHub Apps ID
       app-private-key:
         required: false
-        description: Private Key for GitHub Apps
+        description: Private key for GitHub Apps
 
 permissions: {}
 
@@ -79,8 +83,9 @@ jobs:
           password: ${{ github.token }}
 
       - name: Log private key's fingerprint
+        if: ${{ inputs.app-private-key-fingerprint != '' }}
         env:
-          FINGERPRINT: ${{ vars.APP_PRIVATE_KEY_FINGERPRINT }}
+          FINGERPRINT: ${{ inputs.app-private-key-fingerprint }}
         run: |
           echo "fingerprint=${FINGERPRINT}"
 
