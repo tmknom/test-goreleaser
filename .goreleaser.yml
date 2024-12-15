@@ -159,8 +159,6 @@ sboms:
       - "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"
   - id: package
     artifacts: package
-  - id: source
-    artifacts: source
 
 changelog:
   use: github-native
