@@ -90,7 +90,7 @@ jobs:
         with:
           app-id: ${{ secrets.app-id }}
           private-key: ${{ secrets.app-private-key }}
-          repositories: homebrew-tap
+          repositories: homebrew-tap, homebrew-test-tap
 
       - name: Run GoReleaser
         id: goreleaser
