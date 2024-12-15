@@ -156,15 +156,11 @@ sboms:
   - id: binary
     artifacts: binary
     documents:
-      - "${artifact}.sbom.json"
-  - id: package
-    artifacts: package
-    documents:
-      - "${artifact}.sbom.json"
+      - "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"
   - id: source
     artifacts: source
     documents:
-      - "${artifact}.sbom.json"
+      - "{{ .ProjectName }}_{{ .Version }}_source.sbom.json"
 
 changelog:
   use: github-native
