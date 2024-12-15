@@ -63,8 +63,8 @@ brews:
       pull_request:
         enabled: true
     commit_author:
-      name: github-actions[bot]
-      email: 41898282+github-actions[bot]@users.noreply.github.com
+      name: homebrew-tap-pr-writer-for-tmknom[bot]
+      email: 191747748+homebrew-tap-pr-writer-for-tmknom[bot]@users.noreply.github.com
     directory: Formula
     homepage: "{{ .GitURL }}"
     description: "{{ .ProjectName }} {{ .Version }}"
