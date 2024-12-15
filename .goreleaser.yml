@@ -54,6 +54,18 @@ nfpms:
       - deb
       - rpm
 
+brews:
+  - repository:
+      owner: "{{ .Env.GITHUB_REPOSITORY_OWNER }}"
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    pull_request:
+      enabled: true
+    homepage: "{{ .GitURL }}"
+    test: |
+      system "#{bin}/{{ .ProjectName }} --version"
+
 dockers:
   - image_templates:
       - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-amd64"

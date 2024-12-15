@@ -11,6 +11,13 @@ on:
         default: go.mod
         required: false
         description: Path to the version file for Go, such as .go-version, go.mod or go.work.
+    secrets:
+      app-id:
+        required: false
+        description: GitHub Apps ID
+      app-private-key:
+        required: false
+        description: Private Key for GitHub Apps
 
 permissions: {}
 
@@ -67,6 +74,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+      - name: Log private key's fingerprint
+        env:
+          FINGERPRINT: ${{ vars.APP_PRIVATE_KEY_FINGERPRINT }}
+        run: |
+          echo "fingerprint=${FINGERPRINT}"
+
+      - name: Create GitHub App token
+        id: app
+        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
+        with:
+          app-id: ${{ secrets.app-id }}
+          private-key: ${{ secrets.app-private-key }}
+          repositories: homebrew-tap
+
       - name: Run GoReleaser
         id: goreleaser
         uses: goreleaser/goreleaser-action@9ed2f89a662bf1735a48bc8557fd212fa902bebf # v6.1.0
@@ -76,6 +97,7 @@ jobs:
           args: release --clean --verbose
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ steps.app.outputs.token }}
 
       - name: Attest binaries
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0

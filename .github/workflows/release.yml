@@ -18,11 +18,14 @@ permissions: {}
 
 jobs:
   call:
-    # uses: ./.github/workflows/reusable-release.yml
+    uses: ./.github/workflows/reusable-release.yml
     # uses: tmknom/release-workflows/.github/workflows/go.yml@main
-    uses: tmknom/release-workflows/.github/workflows/go.yml@307f3a562bf3a75d06e23a928a6316a98aa57651 # v0.7.0
+    # uses: tmknom/release-workflows/.github/workflows/go.yml@307f3a562bf3a75d06e23a928a6316a98aa57651 # v0.7.0
     with:
       bump-level: ${{ inputs.bump-level }}
+    secrets:
+      app-id: ${{ secrets.APP_ID }}
+      app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
     permissions:
       contents: write
       packages: write
