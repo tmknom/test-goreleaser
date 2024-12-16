@@ -188,7 +188,7 @@ release:
 
     ## Installation
 
-    Packages downloaded from {{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/ are considered official binaries.
+    Packages downloaded from {{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/ are considered official binaries.
     We focus on popular operating systems such as Linux, Windows, macOS, and CPU architectures such as `amd64` and `arm64`.
 
     ### Linux
@@ -198,7 +198,7 @@ release:
     Download the `.deb` packages for your architecture (e.g., `*_linux_amd64.deb` or `*_linux_arm64.deb`), and install using `dpkg` command.
 
     ```shell
-    curl -sSL -o {{ .ProjectName }}.deb "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.deb"
+    curl -sSL -o {{ .ProjectName }}.deb "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.deb"
     dpkg -i {{ .ProjectName }}.deb
     ```
 
@@ -207,7 +207,7 @@ release:
     Download the `.rpm` packages for your architecture (e.g., `*_linux_amd64.rpm` or `*_linux_arm64.rpm`), and install using `rpm` command.
 
     ```shell
-    curl -sSL -o {{ .ProjectName }}.rpm "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.rpm"
+    curl -sSL -o {{ .ProjectName }}.rpm "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.rpm"
     rpm -ivh {{ .ProjectName }}.rpm
     ```
 
@@ -216,7 +216,7 @@ release:
     Download the `.apk` packages for your architecture (e.g., `*_linux_amd64.apk` or `*_linux_arm64.apk`), and install using `apk` command.
 
     ```shell
-    curl -sSL -o {{ .ProjectName }}.apk "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.apk"
+    curl -sSL -o {{ .ProjectName }}.apk "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.apk"
     apk add --allow-untrusted {{ .ProjectName }}.apk
     ```
 
@@ -225,7 +225,7 @@ release:
     Download the binaries for your architecture (e.g., `*_linux_amd64` or `*_linux_arm64`), make the binary executable, and move to a directory in your `PATH`.
 
     ```shell
-    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64"
+    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64"
     chmod +x {{ .ProjectName }}
     sudo mv {{ .ProjectName }} /usr/local/bin/{{ .ProjectName }}
     ```
@@ -243,7 +243,7 @@ release:
     Download the binaries for your architecture (e.g., `*_darwin_amd64` or `*_darwin_arm64`), make the binary executable, and move to a directory in your `PATH`.
 
     ```shell
-    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_darwin_amd64"
+    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_darwin_amd64"
     chmod +x {{ .ProjectName }}
     sudo mv {{ .ProjectName }} /usr/local/bin/{{ .ProjectName }}
     ```
@@ -371,5 +371,5 @@ release:
         ```shell
         slsa-verifier verify-image \
           --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
-          "$(docker inspect --format '\{\{index .RepoDigests 0\}\}' ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }})"
+          "$(docker inspect --format '{{index .RepoDigests 0}}' ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }})"
         ```
