@@ -186,66 +186,190 @@ release:
   footer: |
     ---
 
-    ## Strictly verify binaries
+    ## Installation
 
-    ### Download
+    Packages downloaded from {{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/ are considered official binaries.
+    We focus on popular operating systems such as Linux, Windows, macOS, and CPU architectures such as `amd64` and `arm64`.
 
-    ```shell
-    gh release download v{{ .Version }}
-    ```
+    ### Linux
 
-    ### Cosign
+    #### DEB-based istributions (Ubuntu/Debian)
 
-    ```shell
-    cosign verify-blob \
-      --signature "{{ .ProjectName }}_{{ .Version }}_checksums.txt.sig" \
-      --certificate "{{ .ProjectName }}_{{ .Version }}_checksums.txt.pem" \
-      --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-      --certificate-identity-regexp "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$" \
-      --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
-      --certificate-github-workflow-sha "{{ .FullCommit }}" \
-      "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
-
-    sha256sum --ignore-missing -c "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
-    ```
-
-    ### GitHub Attestations
+    Download the `.deb` packages for your architecture (e.g., `*_linux_amd64.deb` or `*_linux_arm64.deb`), and install using `dpkg` command.
 
     ```shell
-    gh attestation verify {{ .ProjectName }}_{{ .Version }}_checksums.txt \
-      --deny-self-hosted-runners \
-      --repo "{{ .Env.GITHUB_REPOSITORY }}" \
-      --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
-      --cert-identity-regex "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$"
-
-    sha256sum --ignore-missing -c "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+    curl -sSL -o {{ .ProjectName }}.deb "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.deb"
+    dpkg -i {{ .ProjectName }}.deb
     ```
 
-    ## Strictly verify container images
+    #### RPM-based distributions (Fedora/RedHat/CentOS)
 
-    ### Download
+    Download the `.rpm` packages for your architecture (e.g., `*_linux_amd64.rpm` or `*_linux_arm64.rpm`), and install using `rpm` command.
 
     ```shell
-    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }}
+    curl -sSL -o {{ .ProjectName }}.rpm "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.rpm"
+    rpm -ivh {{ .ProjectName }}.rpm
     ```
 
-    ### Cosign
+    #### APK-based distributions (Alpine Linux)
+
+    Download the `.apk` packages for your architecture (e.g., `*_linux_amd64.apk` or `*_linux_arm64.apk`), and install using `apk` command.
 
     ```shell
-    cosign verify \
-      --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
-      --certificate-identity-regexp "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$" \
-      --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
-      --certificate-github-workflow-sha "{{ .FullCommit }}" \
-      ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }}
+    curl -sSL -o {{ .ProjectName }}.apk "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.apk"
+    apk add --allow-untrusted {{ .ProjectName }}.apk
     ```
 
-    ### GitHub Attestations
+    #### Manually
+
+    Download the binaries for your architecture (e.g., `*_linux_amd64` or `*_linux_arm64`), make the binary executable, and move to a directory in your `PATH`.
 
     ```shell
-    gh attestation verify oci://ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:v{{ .Version }} \
-      --deny-self-hosted-runners \
-      --repo "{{ .Env.GITHUB_REPOSITORY }}" \
-      --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
-      --cert-identity-regex "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$"
+    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64"
+    chmod +x {{ .ProjectName }}
+    sudo mv {{ .ProjectName }} /usr/local/bin/{{ .ProjectName }}
     ```
+
+    ### macOS
+
+    #### Homebrew
+
+    ```shell
+    brew install tmknom/tap/{{ .ProjectName }}
+    ```
+
+    #### Manually
+
+    Download the binaries for your architecture (e.g., `*_darwin_amd64` or `*_darwin_arm64`), make the binary executable, and move to a directory in your `PATH`.
+
+    ```shell
+    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/"{{ .Env.GITHUB_REPOSITORY }}"/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_darwin_amd64"
+    chmod +x {{ .ProjectName }}
+    sudo mv {{ .ProjectName }} /usr/local/bin/{{ .ProjectName }}
+    ```
+
+    ### Container images
+
+    ```shell
+    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }}
+    ```
+
+    ## Binaries verification
+
+    All artifacts are checksummed, and signed by Cosign using identity-based ("keyless") signing and transparency.
+
+    ### Checksum verification
+
+    1. Install [GitHub CLI](https://cli.github.com/) and [Cosign](https://github.com/sigstore/cosign) if not already available.
+    2. Download all artifacts using GitHub CLI:
+        ```shell
+        gh release download v{{ .Version }}
+        ```
+    3. Verify the signature using:
+        ```shell
+        cosign verify-blob \
+          --signature "{{ .ProjectName }}_{{ .Version }}_checksums.txt.sig" \
+          --certificate "{{ .ProjectName }}_{{ .Version }}_checksums.txt.pem" \
+          --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+          --certificate-identity-regexp "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$" \
+          --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
+          --certificate-github-workflow-sha "{{ .FullCommit }}" \
+          "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+        ```
+    4. Verify the checksum of the downloaded files using:
+        ```shell
+        sha256sum --ignore-missing -c "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+        ```
+        Ensure that the output indicates a valid match.
+
+    ### Cosign verification 
+
+    You can verify all artifacts such as executable binaries, Linux packages, checksum files, and SBOMs.
+    For example, `linux/amd64` binary:
+
+    1. Install [Cosign](https://github.com/sigstore/cosign) if not already available.
+    2. Verify the signature using:
+        ```shell
+        cosign verify-blob \
+          --signature "{{ .ProjectName }}_{{ .Version }}_linux_amd64.sig" \
+          --certificate "{{ .ProjectName }}_{{ .Version }}_linux_amd64.pem" \
+          --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+          --certificate-identity-regexp "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$" \
+          --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
+          --certificate-github-workflow-sha "{{ .FullCommit }}" \
+          "{{ .ProjectName }}_{{ .Version }}_linux_amd64"
+        ```
+
+    ### GitHub attestations verification
+
+    You can verify all artifacts such as executable binaries, Linux packages, checksum files, and SBOMs.
+    For example, `linux/amd64` binary:
+
+    1. Install [GitHub CLI](https://cli.github.com/) if not already available.
+    2. Verify the attestation:
+        ```shell
+        gh attestation verify "{{ .ProjectName }}_{{ .Version }}_linux_amd64" \
+          --deny-self-hosted-runners \
+          --repo "{{ .Env.GITHUB_REPOSITORY }}" \
+          --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
+          --cert-identity-regex "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$"
+        ```
+
+    ### SLSA provenance verification
+
+    You can verify the executable binaries and the Linux packages.
+    For example, `linux/amd64` binary:
+
+    1. Install the [SLSA Verifier](https://github.com/slsa-framework/slsa-verifier) tool.
+    2. Verify the artifact's provenance:
+        ```shell
+        slsa-verifier verify-artifact \
+          --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
+          --provenance-path multiple.intoto.jsonl \
+          "{{ .ProjectName }}_{{ .Version }}_linux_amd64"
+        ```
+
+    ## Container images verification
+
+    Container images are signed by Cosign using identity-based ("keyless") signing and transparency.
+
+    ### Cosign verification 
+
+    You can verify container images.
+    For example, `amd64` image:
+
+    1. Install [Cosign](https://github.com/sigstore/cosign) if not already available.
+    2. Verify the signature using:
+        ```shell
+        cosign verify \
+          --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+          --certificate-identity-regexp "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$" \
+          --certificate-github-workflow-repository "{{ .Env.GITHUB_REPOSITORY }}" \
+          --certificate-github-workflow-sha "{{ .FullCommit }}" \
+          ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }}
+        ```
+
+    ### GitHub attestations verification
+
+    You can verify all artifacts such as executable binaries, Linux packages, checksum files, and SBOMs.
+    For example, `linux/amd64` binary:
+
+    1. Install [GitHub CLI](https://cli.github.com/) if not already available.
+    2. Verify the attestation:
+        ```shell
+        gh attestation verify oci://ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }} \
+          --deny-self-hosted-runners \
+          --repo "{{ .Env.GITHUB_REPOSITORY }}" \
+          --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
+          --cert-identity-regex "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$"
+        ```
+
+    ### SLSA provenance verification
+
+    1. Install the [SLSA Verifier](https://github.com/slsa-framework/slsa-verifier) tool.
+    2. Verify the artifact's provenance:
+        ```shell
+        slsa-verifier verify-image \
+          --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
+          "$(docker inspect --format '\{\{index .RepoDigests 0\}\}' ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }})"
+        ```
