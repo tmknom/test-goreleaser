@@ -325,7 +325,7 @@ release:
         ```shell
         slsa-verifier verify-artifact \
           --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
-          --provenance-path multiple.intoto.jsonl \
+          --provenance-path "multiple.intoto.jsonl" \
           "{{ .ProjectName }}_{{ .Version }}_linux_amd64"
         ```
 
@@ -373,3 +373,4 @@ release:
           --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
           $(docker inspect --format ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }} | jq -r '.[0].RepoDigests[0]')
         ```
+        Note that the digest must be included when specifying the container image.
