@@ -371,6 +371,6 @@ release:
         ```shell
         slsa-verifier verify-image \
           --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
-          $(docker inspect --format ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }} | jq -r '.[0].RepoDigests[0]')
+          $(docker inspect ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }} | jq -r '.[0].RepoDigests[0]')
         ```
         Note that the digest must be included when specifying the container image.
