@@ -189,7 +189,7 @@ release:
     ## Installation
 
     Packages downloaded from {{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/ are considered official binaries.
-    We focus on popular operating systems such as Linux, Windows, macOS, and CPU architectures such as `amd64` and `arm64`.
+    We focus on popular operating systems, such as Linux, Windows, and macOS, and CPU architectures, such as amd64 and arm64.
 
     ### Linux
 
@@ -284,8 +284,8 @@ release:
 
     ### Cosign verification 
 
-    You can verify all artifacts such as executable binaries, Linux packages, checksum files, and SBOMs.
-    For example, `linux/amd64` binary:
+    You can verify all artifacts, such as executable binaries, Linux packages, checksum files, and SBOMs.
+    For example, the `linux/amd64` binary:
 
     1. Install [Cosign](https://github.com/sigstore/cosign) if not already available.
     2. Verify the signature using:
@@ -302,8 +302,8 @@ release:
 
     ### GitHub attestations verification
 
-    You can verify all artifacts such as executable binaries, Linux packages, checksum files, and SBOMs.
-    For example, `linux/amd64` binary:
+    You can verify all artifacts, such as executable binaries, Linux packages, checksum files, and SBOMs.
+    For example, the `linux/amd64` binary:
 
     1. Install [GitHub CLI](https://cli.github.com/) if not already available.
     2. Verify the attestation:
@@ -318,7 +318,7 @@ release:
     ### SLSA provenance verification
 
     You can verify the executable binaries and the Linux packages.
-    For example, `linux/amd64` binary:
+    For example, the `linux/amd64` binary:
 
     1. Install the [SLSA Verifier](https://github.com/slsa-framework/slsa-verifier) tool.
     2. Verify the artifact's provenance:
@@ -351,8 +351,8 @@ release:
 
     ### GitHub attestations verification
 
-    You can verify all artifacts such as executable binaries, Linux packages, checksum files, and SBOMs.
-    For example, `linux/amd64` binary:
+    You can verify all artifacts, such as executable binaries, Linux packages, checksum files, and SBOMs.
+    For example, the `linux/amd64` binary:
 
     1. Install [GitHub CLI](https://cli.github.com/) if not already available.
     2. Verify the attestation:
