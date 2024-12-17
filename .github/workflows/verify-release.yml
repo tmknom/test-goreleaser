@@ -1,7 +1,7 @@
 name: Verify Release
 on:
   release:
-    types: [published, released]
+    types: [published, created, edited, released]
   workflow_dispatch:
     inputs:
       version:
