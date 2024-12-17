@@ -51,7 +51,8 @@ jobs:
           echo "OIDC_ISSUER=${OIDC_ISSUER}" >> "${GITHUB_ENV}"
 
           escaped_server='^https://github\.com/'
-          escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
+          # escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
+          escaped_workflow='/test-goreleaser/\.github/workflows/reusable-release\.yml@.+$'
           echo "CERTIFICATE_IDENTITY=${escaped_server}${GITHUB_REPOSITORY_OWNER}${escaped_workflow}" >> "${GITHUB_ENV}"
 
       - name: Checkout
