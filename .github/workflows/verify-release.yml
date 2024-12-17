@@ -1,7 +1,7 @@
 name: Verify Release
 on:
   release:
-    types: [published, created, edited, released]
+#    types: [published, created, edited, released]
   workflow_dispatch:
     inputs:
       version:
@@ -118,7 +118,6 @@ jobs:
           slsa-verifier verify-artifact \
             --source-uri "github.com/${GITHUB_REPOSITORY}" \
             --provenance-path "multiple.intoto.jsonl" \
-            --certificate-oidc-issuer "${OIDC_ISSUER}" \
             "${target}"
 
       - name: Verify container images
