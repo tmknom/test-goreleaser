@@ -1,7 +1,7 @@
 name: Verify Release
 on:
   release:
-    types: [published]
+    types: [published, released]
   workflow_dispatch:
     inputs:
       version:
@@ -23,11 +23,6 @@ defaults:
   run:
     shell: bash
 
-env:
-  VERSION: ${{ github.release.outputs.tag_name || inputs.version }}
-  COMMIT: ${{ github.release.outputs.target_commitish || inputs.commit }}
-  OIDC_ISSUER: https://token.actions.githubusercontent.com
-
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -42,11 +37,18 @@ jobs:
         run: |
           echo "${CONTEXT}"
 
-      - name: Generate repository name
+      - name: Set environment variables
         id: repository
+        env:
+          VERSION: ${{ github.release.outputs.tag_name || inputs.version }}
+          COMMIT: ${{ github.release.outputs.target_commitish || inputs.commit }}
+          OIDC_ISSUER: https://token.actions.githubusercontent.com
         run: |
           set -x
           echo "NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}" >> "${GITHUB_ENV}"
+          echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
+          echo "COMMIT=${COMMIT}" >> "${GITHUB_ENV}"
+          echo "OIDC_ISSUER=${OIDC_ISSUER}" >> "${GITHUB_ENV}"
 
           escaped_server='^https://github\.com/'
           escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
@@ -62,6 +64,8 @@ jobs:
         uses: slsa-framework/slsa-verifier/actions/installer@3714a2a4684014deb874a0e737dffa0ee02dd647 # v2.6.0
 
       - name: Download artifacts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
           gh release download "${VERSION}"
@@ -95,6 +99,8 @@ jobs:
             "${target}"
 
       - name: Verify attestations for binary
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
           target="${NAME}_${VERSION}_linux_amd64"
@@ -126,6 +132,8 @@ jobs:
             "${target}"
 
       - name: Verify attestations for container image
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
           target="ghcr.io/${GITHUB_REPOSITORY}:v${VERSION}"
