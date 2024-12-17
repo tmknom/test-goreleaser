@@ -18,9 +18,9 @@ permissions: {}
 
 jobs:
   call:
-    # uses: ./.github/workflows/reusable-release.yml
+    uses: ./.github/workflows/reusable-release.yml
     # uses: tmknom/release-workflows/.github/workflows/go.yml@main
-    uses: tmknom/release-workflows/.github/workflows/go.yml@c2a01576e07b2a356339794e6ad3fd059960dbf7 # v0.8.0
+    # uses: tmknom/release-workflows/.github/workflows/go.yml@c2a01576e07b2a356339794e6ad3fd059960dbf7 # v0.8.0
     with:
       bump-level: ${{ inputs.bump-level }}
       homebrew-tap-repository: homebrew-test-tap
