@@ -27,7 +27,6 @@ env:
   VERSION: ${{ github.release.outputs.tag_name || inputs.version }}
   COMMIT: ${{ github.release.outputs.target_commitish || inputs.commit }}
   OIDC_ISSUER: https://token.actions.githubusercontent.com
-  CERTIFICATE_IDENTITY: "^https://github\.com/${GITHUB_REPOSITORY_OWNER}/release-workflows/\.github/workflows/go\.yml@.+$"
 
 jobs:
   verify:
@@ -48,6 +47,10 @@ jobs:
         run: |
           set -x
           echo "NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}" >> "${GITHUB_ENV}"
+
+          escaped_server='^https://github\.com/'
+          escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
+          echo "CERTIFICATE_IDENTITY=${escaped_server}${GITHUB_REPOSITORY_OWNER}${escaped_workflow}" >> "${GITHUB_ENV}"
 
       - name: Checkout
         uses: tmknom/checkout-action@v1
