@@ -10,6 +10,8 @@ before:
     - go mod tidy
     - git --no-pager diff --exit-code go.mod go.sum
 
+report_sizes: true
+
 gomod:
   proxy: true
 
