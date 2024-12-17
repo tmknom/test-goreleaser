@@ -149,6 +149,7 @@ jobs:
       base64-subjects: ${{ needs.release.outputs.checksum-hashes }}
       upload-tag-name: ${{ needs.release.outputs.version }}
       upload-assets: true
+      draft-release: true
     permissions:
       contents: write
       id-token: write
