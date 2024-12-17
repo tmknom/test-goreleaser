@@ -177,6 +177,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
+
       - name: Publish release
         env:
           VERSION: ${{ needs.release.outputs.version }}
