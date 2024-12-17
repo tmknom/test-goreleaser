@@ -68,8 +68,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
-          gh release download "${VERSION}"
-          docker pull "ghcr.io/${GITHUB_REPOSITORY}:${VERSION}"
+          gh release download "v${VERSION}"
+          docker pull "ghcr.io/${GITHUB_REPOSITORY}:v${VERSION}"
 
       - name: Verify checksum
         run: |
