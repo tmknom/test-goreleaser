@@ -191,6 +191,7 @@ changelog:
 
 release:
   mode: append
+  draft: true
   footer: |
     ---
 

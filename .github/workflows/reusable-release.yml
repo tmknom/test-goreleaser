@@ -169,3 +169,18 @@ jobs:
       id-token: write
       actions: read
     needs: [release]
+
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [release, binary-provenance, image-provenance]
+    permissions:
+      contents: write
+    steps:
+      - name: Publish release
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          gh release edit "${VERSION}" --draft=false
