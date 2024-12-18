@@ -45,10 +45,12 @@ jobs:
           OIDC_ISSUER: https://token.actions.githubusercontent.com
         run: |
           set -x
-          echo "NAME=${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}" >> "${GITHUB_ENV}"
-          echo "VERSION=${VERSION}" >> "${GITHUB_ENV}"
-          echo "COMMIT=${COMMIT}" >> "${GITHUB_ENV}"
-          echo "OIDC_ISSUER=${OIDC_ISSUER}" >> "${GITHUB_ENV}"
+          {
+            echo "NAME=${GITHUB_REPOSITORY#"${GITHUB_REPOSITORY_OWNER}"/}"
+            echo "VERSION=${VERSION}"
+            echo "COMMIT=${COMMIT}"
+            echo "OIDC_ISSUER=${OIDC_ISSUER}"
+          } >> "${GITHUB_ENV}"
 
           escaped_server='^https://github\.com/'
           # escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
@@ -149,4 +151,4 @@ jobs:
           target="ghcr.io/${GITHUB_REPOSITORY}:v${VERSION}"
           slsa-verifier verify-image \
             --source-uri "github.com/${GITHUB_REPOSITORY}" \
-            "$(docker inspect ${target} | jq -r '.[0].RepoDigests[0]')"
+            "$(docker inspect "${target}" | jq -r '.[0].RepoDigests[0]')"
