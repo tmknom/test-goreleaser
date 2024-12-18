@@ -39,6 +39,9 @@ jobs:
         run: |
           printenv CONTEXT
 
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
+
       - name: Set environment variables
         id: repository
         run: |
@@ -56,9 +59,6 @@ jobs:
           # escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
           escaped_workflow='/test-goreleaser/\.github/workflows/reusable-release\.yml@.+$'
           echo "CERTIFICATE_IDENTITY=${escaped_server}${GITHUB_REPOSITORY_OWNER}${escaped_workflow}" >> "${GITHUB_ENV}"
-
-      - name: Checkout
-        uses: tmknom/checkout-action@v1
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
