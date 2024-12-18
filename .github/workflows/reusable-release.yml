@@ -48,8 +48,6 @@ jobs:
       version-tag: ${{ steps.bump.outputs.version }}
       checksum-hashes: ${{ steps.metadata.outputs.checksum-hashes }}
       manifest-digest: ${{ steps.metadata.outputs.manifest-digest }}
-    env:
-      DIST_DIR: ${{ runner.temp }}/__release/dist
     steps:
       - name: Check actor access
         if: ${{ github.repository_owner != github.actor }}
@@ -117,7 +115,7 @@ jobs:
       - name: Attest binaries
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
         with:
-          subject-path: ${{ env.DIST_DIR }}
+          subject-path: dist/
 
       - name: Generate metadata
         id: metadata
@@ -150,7 +148,7 @@ jobs:
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: dist
-          path: ${{ env.DIST_DIR }}
+          path: dist/
           retention-days: 1
 
   binary-provenance:
