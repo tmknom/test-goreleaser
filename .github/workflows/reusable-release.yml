@@ -113,7 +113,6 @@ jobs:
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ steps.app.outputs.token }}
 
       - name: Attest binaries
-        id: binary-attestation
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
         with:
           subject-path: dist/
@@ -139,21 +138,11 @@ jobs:
           echo "manifest-digest=${manifest_digest}" >> "${GITHUB_OUTPUT}"
 
       - name: Attest container images
-        id: image-attestation
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.metadata.outputs.manifest-digest }}
           push-to-registry: true
-
-      - name: Copy bundle files to dist
-        env:
-          BINARY_ATTESTATION: ${{ steps.binary-attestation.outputs.bundle-path }}
-          IMAGE_ATTESTATION: ${{ steps.image-attestation.outputs.bundle-path }}
-        run: |
-          set -x
-          cp "${BINARY_ATTESTATION}" dist/
-          cp "${IMAGE_ATTESTATION}" dist/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
