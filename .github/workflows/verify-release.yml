@@ -35,7 +35,7 @@ jobs:
         env:
           CONTEXT: ${{ toJSON(github) }}
         run: |
-          echo "${CONTEXT}"
+          printenv CONTEXT
 
       - name: Set environment variables
         id: repository
