@@ -1,7 +1,9 @@
 name: Verify Release
 on:
-  release:
-#    types: [published, created, edited, released]
+  workflow_run:
+    workflows: [Release]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       version:
@@ -39,22 +41,20 @@ jobs:
 
       - name: Set environment variables
         id: repository
-        env:
-          VERSION: ${{ github.event.release.outputs.tag_name || inputs.version || '0.18.9' }}
-          COMMIT: ${{ github.event.release.outputs.target_commitish || inputs.commit || '31db98b530ea069c9e8999e2cb8e32fa4fdbe5ff' }}
-          OIDC_ISSUER: https://token.actions.githubusercontent.com
         run: |
           set -x
+          version="$(curl -sSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest" | jq -r '.tag_name')"
+          commit="$(git rev-list -n 1 "${version}")"
           {
             echo "NAME=${GITHUB_REPOSITORY#"${GITHUB_REPOSITORY_OWNER}"/}"
-            echo "VERSION=${VERSION#v}"
-            echo "COMMIT=${COMMIT}"
-            echo "OIDC_ISSUER=${OIDC_ISSUER}"
+            echo "VERSION=${version#v}"
+            echo "COMMIT=${commit}"
+            echo "OIDC_ISSUER=https://token.actions.githubusercontent.com"
           } >> "${GITHUB_ENV}"
 
           escaped_server='^https://github\.com/'
-          escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
-          # escaped_workflow='/test-goreleaser/\.github/workflows/reusable-release\.yml@.+$'
+          # escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
+          escaped_workflow='/test-goreleaser/\.github/workflows/reusable-release\.yml@.+$'
           echo "CERTIFICATE_IDENTITY=${escaped_server}${GITHUB_REPOSITORY_OWNER}${escaped_workflow}" >> "${GITHUB_ENV}"
 
       - name: Checkout
