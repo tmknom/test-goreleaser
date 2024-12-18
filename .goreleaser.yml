@@ -334,7 +334,7 @@ release:
         ```shell
         slsa-verifier verify-artifact \
           --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
-          --provenance-path "multiple.intoto.jsonl" \
+          --provenance-path "{{ .ProjectName }}_{{ .Version }}.intoto.jsonl" \
           "{{ .ProjectName }}_{{ .Version }}_linux_amd64"
         ```
 
