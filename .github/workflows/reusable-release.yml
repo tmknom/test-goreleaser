@@ -124,10 +124,10 @@ jobs:
           METADATA: ${{ steps.goreleaser.outputs.metadata }}
         run: |
           set -x
-          name="$jq -r '.project_name' <<<"${METADATA}")"
+          name="$(jq -r '.project_name' <<<"${METADATA}")"
           echo "name=${name}" >> "${GITHUB_OUTPUT}"
 
-          version="$jq -r '.version' <<<"${METADATA}")"
+          version="$(jq -r '.version' <<<"${METADATA}")"
           echo "version=${version}" >> "${GITHUB_OUTPUT}"
 
           checksum_file="$(jq -r '.[] | select (.type=="Checksum") | .path' <<<"${ARTIFACTS}")"
