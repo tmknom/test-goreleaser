@@ -6,11 +6,11 @@ on:
     inputs:
       version:
         type: string
-        required: true
+        required: false
         description: The version of released artifacts.
       commit:
         type: string
-        required: true
+        required: false
         description: The commit of released artifacts.
 
 concurrency:
@@ -40,8 +40,8 @@ jobs:
       - name: Set environment variables
         id: repository
         env:
-          VERSION: ${{ github.event.release.outputs.tag_name || inputs.version }}
-          COMMIT: ${{ github.event.release.outputs.target_commitish || inputs.commit }}
+          VERSION: ${{ github.event.release.outputs.tag_name || inputs.version || '0.18.9' }}
+          COMMIT: ${{ github.event.release.outputs.target_commitish || inputs.commit || '31db98b530ea069c9e8999e2cb8e32fa4fdbe5ff' }}
           OIDC_ISSUER: https://token.actions.githubusercontent.com
         run: |
           set -x
@@ -53,8 +53,8 @@ jobs:
           } >> "${GITHUB_ENV}"
 
           escaped_server='^https://github\.com/'
-          # escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
-          escaped_workflow='/test-goreleaser/\.github/workflows/reusable-release\.yml@.+$'
+          escaped_workflow='/release-workflows/\.github/workflows/go\.yml@.+$'
+          # escaped_workflow='/test-goreleaser/\.github/workflows/reusable-release\.yml@.+$'
           echo "CERTIFICATE_IDENTITY=${escaped_server}${GITHUB_REPOSITORY_OWNER}${escaped_workflow}" >> "${GITHUB_ENV}"
 
       - name: Checkout
@@ -119,7 +119,7 @@ jobs:
           target="${NAME}_${VERSION}_linux_amd64"
           slsa-verifier verify-artifact \
             --source-uri "github.com/${GITHUB_REPOSITORY}" \
-            --provenance-path "multiple.intoto.jsonl" \
+            --provenance-path "${NAME}_${VERSION}.intoto.jsonl" \
             "${target}"
 
       - name: Verify container images
