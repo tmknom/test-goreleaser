@@ -39,18 +39,27 @@ jobs:
         run: |
           printenv CONTEXT
 
-      - name: Checkout
-        uses: tmknom/checkout-action@v1
-
-      - name: Set environment variables
-        id: repository
+      - name: Describe latest tag
+        id: latest
         run: |
           set -x
-          version="$(curl -sSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest" | jq -r '.tag_name')"
-          commit="$(git rev-list -n 1 "${version}")"
+          latest="$(curl -sSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest" | jq -r '.tag_name')"
+          echo "tag=${latest}" >> "${GITHUB_OUTPUT}"
+
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
+        with:
+          ref: ${{ needs.latest.outputs.tag }}
+
+      - name: Set environment variables
+        env:
+          LATEST_TAG: ${{ needs.latest.outputs.tag }}
+        run: |
+          set -x
+          commit="$(git rev-list -n 1 "${LATEST_TAG}")"
           {
             echo "NAME=${GITHUB_REPOSITORY#"${GITHUB_REPOSITORY_OWNER}"/}"
-            echo "VERSION=${version#v}"
+            echo "VERSION=${LATEST_TAG#v}"
             echo "COMMIT=${commit}"
             echo "OIDC_ISSUER=https://token.actions.githubusercontent.com"
           } >> "${GITHUB_ENV}"
