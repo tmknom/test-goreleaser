@@ -191,18 +191,10 @@ jobs:
       - name: Checkout
         uses: tmknom/checkout-action@v1
 
-      - name: Create GitHub App token
-        id: app
-        uses: actions/create-github-app-token@5d869da34e18e7287c1daad50e0b8ea0f506ce69 # v1.11.0
-        with:
-          app-id: ${{ secrets.app-id }}
-          private-key: ${{ secrets.app-private-key }}
-          repositories: ${{ needs.release.outputs.name }}
-
       - name: Publish release
         env:
           VERSION_TAG: ${{ needs.release.outputs.version-tag }}
-          GITHUB_TOKEN: ${{ steps.app.outputs.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
           gh release edit "${VERSION_TAG}" --draft=false
