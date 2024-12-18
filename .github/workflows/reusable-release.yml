@@ -155,7 +155,7 @@ jobs:
     # Must be referenced by a tag. https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/container/README.md#referencing-the-slsa-generator
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
     with:
-      provenance-name: dist/${{ needs.release.outputs.name }}_${{ needs.release.outputs.version }}.intoto.jsonl
+      provenance-name: ${{ needs.release.outputs.name }}_${{ needs.release.outputs.version }}.intoto.jsonl
       base64-subjects: ${{ needs.release.outputs.checksum-hashes }}
       upload-tag-name: ${{ needs.release.outputs.version-tag }}
       upload-assets: true
