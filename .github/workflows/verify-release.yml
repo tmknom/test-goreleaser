@@ -49,11 +49,11 @@ jobs:
       - name: Checkout
         uses: tmknom/checkout-action@v1
         with:
-          ref: ${{ needs.latest.outputs.tag }}
+          ref: ${{ steps.latest.outputs.tag }}
 
       - name: Set environment variables
         env:
-          LATEST_TAG: ${{ needs.latest.outputs.tag }}
+          LATEST_TAG: ${{ steps.latest.outputs.tag }}
         run: |
           set -x
           commit="$(git rev-list -n 1 "${LATEST_TAG}")"
