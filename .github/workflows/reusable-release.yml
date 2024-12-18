@@ -43,7 +43,9 @@ jobs:
       id-token: write
       attestations: write
     outputs:
-      version: ${{ steps.bump.outputs.version }}
+      name: ${{ steps.metadata.outputs.name }}
+      version: ${{ steps.metadata.outputs.version }}
+      version-tag: ${{ steps.bump.outputs.version }}
       checksum-hashes: ${{ steps.metadata.outputs.checksum-hashes }}
       manifest-digest: ${{ steps.metadata.outputs.manifest-digest }}
     steps:
@@ -74,7 +76,7 @@ jobs:
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
 
       - name: Install Syft
-        uses: anchore/sbom-action/download-syft@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.6
+        uses: anchore/sbom-action/download-syft@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
@@ -119,8 +121,15 @@ jobs:
         id: metadata
         env:
           ARTIFACTS: ${{ steps.goreleaser.outputs.artifacts }}
+          METADATA: ${{ steps.goreleaser.outputs.metadata }}
         run: |
           set -x
+          name="$jq -r '.project_name' <<<"${METADATA}")"
+          echo "name=${name}" >> "${GITHUB_OUTPUT}"
+
+          version="$jq -r '.version' <<<"${METADATA}")"
+          echo "version=${version}" >> "${GITHUB_OUTPUT}"
+
           checksum_file="$(jq -r '.[] | select (.type=="Checksum") | .path' <<<"${ARTIFACTS}")"
           checksum_hashes="$(base64 -w0 "${checksum_file}")"
           echo "checksum-hashes=${checksum_hashes}" >> "${GITHUB_OUTPUT}"
@@ -146,8 +155,9 @@ jobs:
     # Must be referenced by a tag. https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/container/README.md#referencing-the-slsa-generator
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
     with:
+      provenance-name: dist/${{ needs.release.outputs.name }}_${{ needs.release.outputs.version }}.intoto.jsonl
       base64-subjects: ${{ needs.release.outputs.checksum-hashes }}
-      upload-tag-name: ${{ needs.release.outputs.version }}
+      upload-tag-name: ${{ needs.release.outputs.version-tag }}
       upload-assets: true
       draft-release: true
     permissions:
@@ -183,8 +193,8 @@ jobs:
 
       - name: Publish release
         env:
-          VERSION: ${{ needs.release.outputs.version }}
+          VERSION_TAG: ${{ needs.release.outputs.version-tag }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
-          gh release edit "${VERSION}" --draft=false
+          gh release edit "${VERSION_TAG}" --draft=false
