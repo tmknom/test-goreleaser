@@ -47,7 +47,7 @@ jobs:
           set -x
           {
             echo "NAME=${GITHUB_REPOSITORY#"${GITHUB_REPOSITORY_OWNER}"/}"
-            echo "VERSION=${VERSION}"
+            echo "VERSION=${VERSION#v}"
             echo "COMMIT=${COMMIT}"
             echo "OIDC_ISSUER=${OIDC_ISSUER}"
           } >> "${GITHUB_ENV}"
