@@ -138,7 +138,6 @@ signs:
     output: true
     args:
       - sign-blob
-      - --bundle=${artifact}.bundle
       - --output-signature=${signature}
       - --output-certificate=${certificate}
       - --oidc-issuer=https://token.actions.githubusercontent.com
