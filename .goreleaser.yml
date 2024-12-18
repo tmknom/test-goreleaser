@@ -291,7 +291,7 @@ release:
         ```
         Ensure that the output indicates a valid match.
 
-    ### Cosign verification 
+    ### Cosign verification
 
     You can verify all artifacts, such as executable binaries, Linux packages, checksum files, and SBOMs.
     For example, the `linux/amd64` binary:
@@ -342,7 +342,7 @@ release:
 
     Container images are signed by Cosign using identity-based ("keyless") signing and transparency.
 
-    ### Cosign verification 
+    ### Cosign verification
 
     You can verify container images.
     For example, `amd64` image:
