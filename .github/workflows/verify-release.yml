@@ -14,7 +14,7 @@ on:
         description: The commit of released artifacts.
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.release.outputs.tag_name }}
+  group: ${{ github.workflow }}-${{ github.event.release.outputs.tag_name }}
   cancel-in-progress: true
 
 permissions: {}
@@ -40,8 +40,8 @@ jobs:
       - name: Set environment variables
         id: repository
         env:
-          VERSION: ${{ github.release.outputs.tag_name || inputs.version }}
-          COMMIT: ${{ github.release.outputs.target_commitish || inputs.commit }}
+          VERSION: ${{ github.event.release.outputs.tag_name || inputs.version }}
+          COMMIT: ${{ github.event.release.outputs.target_commitish || inputs.commit }}
           OIDC_ISSUER: https://token.actions.githubusercontent.com
         run: |
           set -x
