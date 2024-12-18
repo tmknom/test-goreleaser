@@ -10,6 +10,8 @@ before:
     - go mod tidy
     - git --no-pager diff --exit-code go.mod go.sum
 
+dist: "{{ envOrDefault \"DIST_DIR\" \"./dist\" }}"
+
 report_sizes: true
 
 metadata:
