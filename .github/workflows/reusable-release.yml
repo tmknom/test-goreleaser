@@ -31,6 +31,7 @@ jobs:
       id-token: write
     outputs:
       token: ${{ steps.app.outputs.token }}
+      plain: foobar
     steps:
       - name: Download hcp CLI
         uses: hashicorp/hcp-setup-action@fa6934c14c661dfbe9b6cf9c47ddb41759d625aa # v0.1.0
@@ -110,7 +111,7 @@ jobs:
     permissions:
       contents: write
       packages: write
-      id-token: write
+#      id-token: write
       attestations: write
     outputs:
       name: ${{ steps.metadata.outputs.name }}
@@ -158,7 +159,9 @@ jobs:
       - name: Verify token
         env:
           TOKEN: ${{ needs.prepare.outputs.token }}
+          PLAIN: ${{ needs.prepare.outputs.plain }}
         run: |
+          echo "${PLAIN}"
           if [[ "${TOKEN}" != "" ]]; then
             wc -c <<<"${TOKEN}"
           else
