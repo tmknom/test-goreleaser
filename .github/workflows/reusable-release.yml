@@ -15,10 +15,6 @@ on:
         type: string
         required: false
         description: The repository for Homebrew formulae used to install tools on macOS.
-      app-private-key-fingerprint:
-        type: string
-        required: false
-        description: The fingerprint of the private key for GitHub Apps.
 
 permissions: {}
 
@@ -96,6 +92,17 @@ jobs:
           app-private-key-file: ${{ steps.github.outputs.app-private-key-file }}
           repositories: ${{ inputs.homebrew-tap-repository }}
 
+      - name: Verify token
+        env:
+          TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          if [[ "${TOKEN}" != "" ]]; then
+            wc -c <<<"${TOKEN}"
+          else
+            echo "::error title=Not generated token::token is empty"
+            exit 1
+          fi
+
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -147,13 +154,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ github.token }}
-
-      - name: Log private key's fingerprint
-        if: ${{ inputs.app-private-key-fingerprint != '' }}
-        env:
-          FINGERPRINT: ${{ inputs.app-private-key-fingerprint }}
-        run: |
-          echo "fingerprint=${FINGERPRINT}"
 
       - name: Run GoReleaser
         id: goreleaser

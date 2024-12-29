@@ -24,7 +24,6 @@ jobs:
     with:
       bump-level: ${{ inputs.bump-level }}
       homebrew-tap-repository: homebrew-test-tap
-      app-private-key-fingerprint: ${{ vars.APP_PRIVATE_KEY_FINGERPRINT }}
     permissions:
       contents: write
       packages: write
