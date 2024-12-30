@@ -31,6 +31,7 @@ jobs:
       id-token: write
     outputs:
       token: ${{ steps.app.outputs.token }}
+      base64-token: ${{ steps.base64.outputs.token }}
       plain: foobar
     steps:
       - name: Download hcp CLI
@@ -94,11 +95,12 @@ jobs:
           repositories: ${{ inputs.homebrew-tap-repository }}
 
       - name: Verify token
+        id: base64
         env:
           TOKEN: ${{ steps.app.outputs.token }}
         run: |
           if [[ "${TOKEN}" != "" ]]; then
-            wc -c <<<"${TOKEN}"
+            echo "token=$(base64 <<<"${TOKEN}")" >> "${GITHUB_OUTPUT}"
           else
             echo "::error title=Not generated token::token is empty"
             exit 1
@@ -157,13 +159,16 @@ jobs:
           password: ${{ github.token }}
 
       - name: Verify token
+        id: decode
         env:
           TOKEN: ${{ needs.prepare.outputs.token }}
+          BASE64_TOKEN: ${{ needs.prepare.outputs.base64-token }}
           PLAIN: ${{ needs.prepare.outputs.plain }}
         run: |
           echo "${PLAIN}"
-          if [[ "${TOKEN}" != "" ]]; then
-            wc -c <<<"${TOKEN}"
+          if [[ "${BASE64_TOKEN}" != "" ]]; then
+            wc -c <<<"${BASE64_TOKEN}"
+            echo "token=$(base64 -d <<<"${BASE64_TOKEN}")" >> "${GITHUB_OUTPUT}"
           else
             echo "::error title=Not generated token::token is empty"
             exit 1
@@ -179,7 +184,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           HOMEBREW_TAP_REPOSITORY: ${{ inputs.homebrew-tap-repository }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ needs.prepare.outputs.token }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ steps.decode.outputs.token }}
 
       - name: Attest binaries
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
