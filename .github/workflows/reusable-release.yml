@@ -30,7 +30,7 @@ jobs:
       packages: read
       id-token: write
     outputs:
-      token: ${{ steps.encrypt.outputs.token }}
+      token: ${{ steps.encrypt.outputs.result }}
     steps:
       - name: Download hcp CLI
         uses: hashicorp/hcp-setup-action@fa6934c14c661dfbe9b6cf9c47ddb41759d625aa # v0.1.0
@@ -86,7 +86,7 @@ jobs:
 
       - name: Generate GitHub Token
         id: app
-        uses: tmknom/generate-github-token-action@v0
+        uses: tmknom/generate-github-token-action@e0f9098bfea71c5b68642fcbd1c2e690932856b1 # v0.1.0
         with:
           app-id: ${{ steps.github.outputs.app-id }}
           app-private-key-file: ${{ steps.github.outputs.app-private-key-file }}
@@ -94,13 +94,10 @@ jobs:
 
       - name: Encrypt token
         id: encrypt
-        env:
-          TOKEN: ${{ steps.app.outputs.token }}
-        run: |
-          key="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-{GITHUB_WORKFLOW_SHA}" | cut -d' ' -f1)"
-          iv="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_ACTOR_ID}" | head -c 32)"
-          encrypted="$(openssl enc -aes-256-cbc -K "${key}" -iv "${iv}" -base64 <<<"${TOKEN}")"
-          echo "token=${encrypted}" >> "${GITHUB_OUTPUT}"
+        uses: tmknom/symmetric-encrypt-decrypt-action@9e0df07828c3c80c5f3ecbca2cca881751b97805 # v0.1.0
+        with:
+          data: ${{ steps.app.outputs.token }}
+          operation: encrypt
 
   release:
     runs-on: ubuntu-latest
@@ -156,14 +153,10 @@ jobs:
 
       - name: Decrypt token
         id: decrypt
-        env:
-          TOKEN: ${{ needs.prepare.outputs.token }}
-        run: |
-          key="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-{GITHUB_WORKFLOW_SHA}" | cut -d' ' -f1)"
-          iv="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_ACTOR_ID}" | head -c 32)"
-          decrypted="$(openssl enc -d -aes-256-cbc -K "${key}" -iv "${iv}" -base64 <<<"${TOKEN}")"
-          echo "::add-mask::${decrypted}"
-          echo "token=${decrypted}" >> "${GITHUB_OUTPUT}"
+        uses: tmknom/symmetric-encrypt-decrypt-action@9e0df07828c3c80c5f3ecbca2cca881751b97805 # v0.1.0
+        with:
+          data: ${{ needs.prepare.outputs.token }}
+          operation: decrypt
 
       - name: Run GoReleaser
         id: goreleaser
@@ -175,7 +168,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           HOMEBREW_TAP_REPOSITORY: ${{ inputs.homebrew-tap-repository }}
-          HOMEBREW_TAP_GITHUB_TOKEN: ${{ steps.decrypt.outputs.token }}
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ steps.decrypt.outputs.result }}
 
       - name: Attest binaries
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
