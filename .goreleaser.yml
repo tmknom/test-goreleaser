@@ -324,20 +324,6 @@ release:
           --cert-identity-regex "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$"
         ```
 
-    ### SLSA provenance verification
-
-    You can verify the executable binaries and the Linux packages.
-    For example, the `linux/amd64` binary:
-
-    1. Install the [SLSA Verifier](https://github.com/slsa-framework/slsa-verifier) tool.
-    2. Verify the artifact's provenance:
-        ```shell
-        slsa-verifier verify-artifact \
-          --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
-          --provenance-path "{{ .ProjectName }}_{{ .Version }}.intoto.jsonl" \
-          "{{ .ProjectName }}_{{ .Version }}_linux_amd64"
-        ```
-
     ## Container images verification
 
     Container images are signed by Cosign using identity-based ("keyless") signing and transparency.
@@ -372,14 +358,3 @@ release:
           --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
           --cert-identity-regex "^https://github\.com/{{ .Env.GITHUB_REPOSITORY_OWNER }}/release-workflows/\.github/workflows/go\.yml@.+$"
         ```
-
-    ### SLSA provenance verification
-
-    1. Install the [SLSA Verifier](https://github.com/slsa-framework/slsa-verifier) tool.
-    2. Verify the artifact's provenance:
-        ```shell
-        slsa-verifier verify-image \
-          --source-uri "github.com/{{ .Env.GITHUB_REPOSITORY }}" \
-          $(docker inspect ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }} | jq -r '.[0].RepoDigests[0]')
-        ```
-        Note that the digest must be included when specifying the container image.
