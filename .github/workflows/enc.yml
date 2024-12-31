@@ -1,5 +1,6 @@
 name: Jobs encryption
 on:
+  push:
   workflow_dispatch:
 
 permissions: {}
@@ -12,34 +13,16 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    outputs:
-      encrypted: ${{ steps.generate.outputs.encrypted }}
+    permissions:
+      contents: read
     steps:
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
+
       - name: Generate
-        id: generate
         run: |
           set -x
-          secret="SuperSecrets!"
-          echo "::add-mask::${secret}"
+          printenv | grep GITHUB_ | sort -u
 
-          key="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-{GITHUB_ACTOR_ID}" | cut -d' ' -f1)"
-          iv="$(sha256sum <<<"${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}-${GITHUB_WORKFLOW_SHA}" | cut -d' ' -f1 | head -c 32)"
-          encrypted="$(openssl enc -aes-256-cbc -K "${key}" -iv "${iv}" -base64 <<<"${secret}")"
-          echo "encrypted=${encrypted}" >> "${GITHUB_OUTPUT}"
-
-  release:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: [prepare]
-    steps:
-      - name: Verify token
-        id: decode
-        env:
-          ENCRYPTED: ${{ needs.prepare.outputs.encrypted }}
-        run: |
-          set -x
-          key="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-{GITHUB_ACTOR_ID}" | cut -d' ' -f1)"
-          iv="$(sha256sum <<<"${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_SHA}-${GITHUB_WORKFLOW_SHA}" | cut -d' ' -f1 | head -c 32)"
-          decrypted="$(openssl enc -d -aes-256-cbc -K "${key}" -iv "${iv}" -base64 <<<"${ENCRYPTED}")"
-          echo "${decrypted}"
-          wc -c <<<"${decrypted}"
+      - name: env action
+        uses: tmknom/test-goreleaser/.github/actions/env@170a5f659417d98b49d84658f492bf1cdfe03c69
