@@ -108,12 +108,6 @@ jobs:
       packages: write
       id-token: write
       attestations: write
-    outputs:
-      name: ${{ steps.metadata.outputs.name }}
-      version: ${{ steps.metadata.outputs.version }}
-      version-tag: ${{ steps.bump.outputs.version }}
-      checksum-hashes: ${{ steps.metadata.outputs.checksum-hashes }}
-      manifest-digest: ${{ steps.metadata.outputs.manifest-digest }}
     steps:
       - name: Check actor access
         if: ${{ github.repository_owner != github.actor }}
@@ -209,49 +203,9 @@ jobs:
           path: dist/
           retention-days: 1
 
-  binary-provenance:
-    # Must be referenced by a tag. https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/container/README.md#referencing-the-slsa-generator
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
-    with:
-      provenance-name: ${{ needs.release.outputs.name }}_${{ needs.release.outputs.version }}.intoto.jsonl
-      base64-subjects: ${{ needs.release.outputs.checksum-hashes }}
-      upload-tag-name: ${{ needs.release.outputs.version-tag }}
-      upload-assets: true
-      draft-release: true
-    permissions:
-      contents: write
-      id-token: write
-      actions: read
-    needs: [release]
-
-  image-provenance:
-    # Must be refernced by a tag. https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/container/README.md#referencing-the-slsa-generator
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.0.0
-    with:
-      image: ghcr.io/${{ github.repository }}
-      digest: ${{ needs.release.outputs.manifest-digest }}
-      registry-username: ${{ github.actor }}
-    secrets:
-      registry-password: ${{ secrets.GITHUB_TOKEN }}
-    permissions:
-      packages: write
-      id-token: write
-      actions: read
-    needs: [release]
-
-  publish:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs: [release, binary-provenance, image-provenance]
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: tmknom/checkout-action@v1
-
       - name: Publish release
         env:
-          VERSION_TAG: ${{ needs.release.outputs.version-tag }}
+          VERSION_TAG: ${{ steps.bump.outputs.version }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
