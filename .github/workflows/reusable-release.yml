@@ -97,7 +97,6 @@ jobs:
         env:
           TOKEN: ${{ steps.app.outputs.token }}
         run: |
-          set -x
           key="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-{GITHUB_WORKFLOW_SHA}" | cut -d' ' -f1)"
           iv="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_ACTOR_ID}" | head -c 32)"
           encrypted="$(openssl enc -aes-256-cbc -K "${key}" -iv "${iv}" -base64 <<<"${TOKEN}")"
@@ -160,10 +159,10 @@ jobs:
         env:
           TOKEN: ${{ needs.prepare.outputs.token }}
         run: |
-          set -x
           key="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-{GITHUB_WORKFLOW_SHA}" | cut -d' ' -f1)"
           iv="$(sha256sum <<<"${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}-${GITHUB_ACTOR_ID}" | head -c 32)"
           decrypted="$(openssl enc -d -aes-256-cbc -K "${key}" -iv "${iv}" -base64 <<<"${TOKEN}")"
+          echo "::add-mask::${decrypted}"
           echo "token=${decrypted}" >> "${GITHUB_OUTPUT}"
 
       - name: Run GoReleaser
