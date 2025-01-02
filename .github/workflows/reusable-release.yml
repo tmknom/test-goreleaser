@@ -132,7 +132,7 @@ jobs:
           repositories: ${{ inputs.homebrew-tap-repository }}
 
       - name: Validation token
-        uses: tmknom/validation-action@v0
+        uses: tmknom/validation-action@5b02f433dbf60c99846bd2c571566dcd74993291 # v0.2.1
         with:
           value: ${{ steps.app.outputs.token }}
           min-length: 10
@@ -198,7 +198,7 @@ jobs:
           operation: decrypt
 
       - name: Validation token
-        uses: tmknom/validation-action@v0
+        uses: tmknom/validation-action@5b02f433dbf60c99846bd2c571566dcd74993291 # v0.2.1
         with:
           value: ${{ steps.decrypt.outputs.result }}
           min-length: 10
