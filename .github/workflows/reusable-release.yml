@@ -112,8 +112,10 @@ jobs:
 
       - name: Describe GitHub Apps credentials
         id: github
+        env:
+          SECRETS_APP: ${{ steps.hcp-secrets-app.outputs.result }}
         run: |
-          secrets=(hcp vault-secrets secrets open --app github --format=json)
+          secrets=(hcp vault-secrets secrets open --app "${SECRETS_APP}" --format=json)
 
           PR_WRITER_APP_ID="$("${secrets[@]}" PR_WRITER_APP_ID | jq -r '.static_version.value')"
           echo "::add-mask::${PR_WRITER_APP_ID}"
