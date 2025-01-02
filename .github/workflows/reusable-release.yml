@@ -13,6 +13,7 @@ on:
         description: Path to the version file for Go, such as .go-version, go.mod or go.work.
       homebrew-tap-repository:
         type: string
+        default: homebrew-tap
         required: false
         description: The repository for Homebrew formulae used to install tools on macOS.
 
