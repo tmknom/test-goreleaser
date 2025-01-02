@@ -39,8 +39,8 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ github.token }}
 
-      - name: Describe hcp secrets
-        id: hcp
+      - name: Describe encrypted secrets
+        id: encrypted
         env:
           IMAGE: ghcr.io/tmknom/internal-secrets/hcp:latest
         run: |
@@ -50,12 +50,51 @@ jobs:
 
           project_id="$(jq -r '.project_id' <<<"${labels}")"
           echo "::add-mask::${project_id}"
+          echo "project-id=${project_id}" >> "${GITHUB_OUTPUT}"
+
           service_account="$(jq -r '.service_account' <<<"${labels}")"
           echo "::add-mask::${service_account}"
+          echo "service-account=${service_account}" >> "${GITHUB_OUTPUT}"
+
           secrets_app="$(jq -r '.secrets_app' <<<"${labels}")"
           echo "::add-mask::${secrets_app}"
+          echo "secrets-app=${secrets_app}" >> "${GITHUB_OUTPUT}"
 
-          provider="iam/project/${project_id}/service-principal/${service_account}/workload-identity-provider/${secrets_app}"
+      - name: Decrypt HCP Project ID
+        id: hcp-project-id
+        uses: tmknom/symmetric-encrypt-decrypt-action@9e0df07828c3c80c5f3ecbca2cca881751b97805 # v0.1.0
+        with:
+          data: ${{ steps.encrypted.outputs.project-id }}
+          key: key-hcp-project-id-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
+          iv: iv-hcp-project-id-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
+          operation: decrypt
+
+      - name: Decrypt HCP Service Account
+        id: hcp-service-account
+        uses: tmknom/symmetric-encrypt-decrypt-action@9e0df07828c3c80c5f3ecbca2cca881751b97805 # v0.1.0
+        with:
+          data: ${{ steps.encrypted.outputs.service-account }}
+          key: key-hcp-service-account-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
+          iv: iv-hcp-service-account-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
+          operation: decrypt
+
+      - name: Decrypt HCP Secrets App
+        id: hcp-secrets-app
+        uses: tmknom/symmetric-encrypt-decrypt-action@9e0df07828c3c80c5f3ecbca2cca881751b97805 # v0.1.0
+        with:
+          data: ${{ steps.encrypted.outputs.secrets-app }}
+          key: key-hcp-secrets-app-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
+          iv: iv-hcp-secrets-app-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
+          operation: decrypt
+
+      - name: Generate HCP workload identity provider
+        id: hcp
+        env:
+          PROJECT_ID: ${{ steps.hcp-project-id.outputs.result }}
+          SERVICE_ACCOUNT: ${{ steps.hcp-service-account.outputs.result }}
+          SECRETS_APP: ${{ steps.hcp-secrets-app.outputs.result }}
+        run: |
+          provider="iam/project/${PROJECT_ID}/service-principal/${SERVICE_ACCOUNT}/workload-identity-provider/${SECRETS_APP}"
           echo "::add-mask::${provider}"
           echo "provider=${provider}" >> "${GITHUB_OUTPUT}"
 
