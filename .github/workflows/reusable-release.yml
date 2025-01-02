@@ -131,12 +131,6 @@ jobs:
           app-private-key-file: ${{ steps.github.outputs.app-private-key-file }}
           repositories: ${{ inputs.homebrew-tap-repository }}
 
-      - name: Validation token
-        uses: tmknom/validation-action@5b02f433dbf60c99846bd2c571566dcd74993291 # v0.2.1
-        with:
-          value: ${{ steps.app.outputs.token }}
-          min-length: 10
-
       - name: Encrypt token
         id: encrypt
         uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
@@ -196,12 +190,6 @@ jobs:
         with:
           data: ${{ needs.prepare.outputs.token }}
           operation: decrypt
-
-      - name: Validation token
-        uses: tmknom/validation-action@5b02f433dbf60c99846bd2c571566dcd74993291 # v0.2.1
-        with:
-          value: ${{ steps.decrypt.outputs.result }}
-          min-length: 10
 
       - name: Run GoReleaser
         id: goreleaser
