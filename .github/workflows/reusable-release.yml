@@ -62,7 +62,7 @@ jobs:
 
       - name: Decrypt HCP Project ID
         id: hcp-project-id
-        uses: tmknom/symmetric-encrypt-decrypt-action@a14fc049494f5a808f23f4e3dea8397a66c89439 # v0.1.1
+        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
         with:
           data: ${{ steps.encrypted.outputs.project-id }}
           key: key-hcp-project-id-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
@@ -71,7 +71,7 @@ jobs:
 
       - name: Decrypt HCP Service Account
         id: hcp-service-account
-        uses: tmknom/symmetric-encrypt-decrypt-action@a14fc049494f5a808f23f4e3dea8397a66c89439 # v0.1.1
+        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
         with:
           data: ${{ steps.encrypted.outputs.service-account }}
           key: key-hcp-service-account-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
@@ -80,7 +80,7 @@ jobs:
 
       - name: Decrypt HCP Secrets App
         id: hcp-secrets-app
-        uses: tmknom/symmetric-encrypt-decrypt-action@a14fc049494f5a808f23f4e3dea8397a66c89439 # v0.1.1
+        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
         with:
           data: ${{ steps.encrypted.outputs.secrets-app }}
           key: key-hcp-secrets-app-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
@@ -139,7 +139,7 @@ jobs:
 
       - name: Encrypt token
         id: encrypt
-        uses: tmknom/symmetric-encrypt-decrypt-action@a14fc049494f5a808f23f4e3dea8397a66c89439 # v0.1.1
+        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
         with:
           data: ${{ steps.app.outputs.token }}
           operation: encrypt
@@ -192,7 +192,7 @@ jobs:
 
       - name: Decrypt token
         id: decrypt
-        uses: tmknom/symmetric-encrypt-decrypt-action@a14fc049494f5a808f23f4e3dea8397a66c89439 # v0.1.1
+        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
         with:
           data: ${{ needs.prepare.outputs.token }}
           operation: decrypt
