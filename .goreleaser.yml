@@ -180,8 +180,8 @@ release:
 
     ### Manually
 
-    Download the binaries for your operating systems and architecture, make the binary executable, and move to a directory in your `PATH`.
-    For example, if you use AMD64 Linux, Run following commands:
+    Download the binaries for your operating system and architecture, make the binary executable, and move it to a directory in your `PATH`.
+    For example, on AMD64 Linux, run the following commands:
 
     ```shell
     curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64"
@@ -197,7 +197,7 @@ release:
 
     ### DEB
 
-    Download the `.deb` packages for your architecture (e.g., `*_linux_amd64.deb` or `*_linux_arm64.deb`), and install using `dpkg` command.
+    Download the `.deb` package for your architecture (e.g., `*_linux_amd64.deb` or `*_linux_arm64.deb`), and install it using the `dpkg` command.
 
     ```shell
     curl -sSL -o {{ .ProjectName }}.deb "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.deb"
@@ -206,7 +206,7 @@ release:
 
     ### RPM
 
-    Download the `.rpm` packages for your architecture (e.g., `*_linux_amd64.rpm` or `*_linux_arm64.rpm`), and install using `rpm` command.
+    Download the `.rpm` package for your architecture (e.g., `*_linux_amd64.rpm` or `*_linux_arm64.rpm`), and install it using the `rpm` command.
 
     ```shell
     curl -sSL -o {{ .ProjectName }}.rpm "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.rpm"
@@ -215,7 +215,7 @@ release:
 
     ### APK
 
-    Download the `.apk` packages for your architecture (e.g., `*_linux_amd64.apk` or `*_linux_arm64.apk`), and install using `apk` command.
+    Download the `.apk` package for your architecture (e.g., `*_linux_amd64.apk` or `*_linux_arm64.apk`), and install it using the `apk` command.
 
     ```shell
     curl -sSL -o {{ .ProjectName }}.apk "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.apk"
