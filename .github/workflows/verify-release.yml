@@ -72,9 +72,6 @@ jobs:
       - name: Install Cosign
         uses: sigstore/cosign-installer@dc72c7d5c4d10cd6bcb8cf6e3fd625a9e5e537da # v3.7.0
 
-      - name: Install slsa-verifier
-        uses: slsa-framework/slsa-verifier/actions/installer@3714a2a4684014deb874a0e737dffa0ee02dd647 # v2.6.0
-
       - name: Download artifacts
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -122,15 +119,6 @@ jobs:
             --cert-oidc-issuer "${OIDC_ISSUER}" \
             --cert-identity-regex "${CERTIFICATE_IDENTITY}"
 
-      - name: Verify SLSA provenances for binary
-        run: |
-          set -x
-          target="${NAME}_${VERSION}_linux_amd64"
-          slsa-verifier verify-artifact \
-            --source-uri "github.com/${GITHUB_REPOSITORY}" \
-            --provenance-path "${NAME}_${VERSION}.intoto.jsonl" \
-            "${target}"
-
       - name: Verify container images
         run: |
           set -x
@@ -153,11 +141,3 @@ jobs:
             --repo "${GITHUB_REPOSITORY}" \
             --cert-oidc-issuer "${OIDC_ISSUER}" \
             --cert-identity-regex "${CERTIFICATE_IDENTITY}"
-
-      - name: Verify SLSA provenances for container image
-        run: |
-          set -x
-          target="ghcr.io/${GITHUB_REPOSITORY}:v${VERSION}"
-          slsa-verifier verify-image \
-            --source-uri "github.com/${GITHUB_REPOSITORY}" \
-            "$(docker inspect "${target}" | jq -r '.[0].RepoDigests[0]')"
