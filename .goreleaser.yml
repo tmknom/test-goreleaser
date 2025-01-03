@@ -46,10 +46,6 @@ archives:
     builds_info:
       mtime: "{{ .CommitDate }}"
 
-checksum:
-  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
-  algorithm: sha256
-
 nfpms:
   - package_name: "{{ .ProjectName }}"
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
@@ -79,6 +75,10 @@ brews:
     license: Apache-2.0
     test: |
       system "#{bin}/{{ .ProjectName }} --version"
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
 
 dockers:
   - image_templates:
@@ -173,10 +173,6 @@ docker_signs:
       - --oidc-provider=github-actions
       - --yes
       - ${artifact}@${digest}
-
-# TODO
-# "buildSignerURI": "https://github.com/tmknom/test-goreleaser/.github/workflows/reusable-release.yml@refs/heads/main",
-# "buildSignerDigest": "46faec918d673d4c68d8d6525d07272b8115f1d6",
 
 sboms:
   - id: binary
