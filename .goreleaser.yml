@@ -178,9 +178,24 @@ release:
     Packages downloaded from {{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/ are considered official binaries.
     We focus on popular operating systems, such as Linux, Windows, and macOS, and CPU architectures, such as amd64 and arm64.
 
-    ### Linux
+    ### Manually
 
-    #### DEB-based istributions (Ubuntu/Debian)
+    Download the binaries for your operating systems and architecture, make the binary executable, and move to a directory in your `PATH`.
+    For example, if you use AMD64 Linux, Run following commands:
+
+    ```shell
+    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64"
+    chmod +x {{ .ProjectName }}
+    sudo mv {{ .ProjectName }} /usr/local/bin/{{ .ProjectName }}
+    ```
+
+    ### Homebrew
+
+    ```shell
+    brew install tmknom/tap/{{ .ProjectName }}
+    ```
+
+    ### DEB
 
     Download the `.deb` packages for your architecture (e.g., `*_linux_amd64.deb` or `*_linux_arm64.deb`), and install using `dpkg` command.
 
@@ -189,7 +204,7 @@ release:
     dpkg -i {{ .ProjectName }}.deb
     ```
 
-    #### RPM-based distributions (Fedora/RedHat/CentOS)
+    ### RPM
 
     Download the `.rpm` packages for your architecture (e.g., `*_linux_amd64.rpm` or `*_linux_arm64.rpm`), and install using `rpm` command.
 
@@ -198,41 +213,13 @@ release:
     rpm -ivh {{ .ProjectName }}.rpm
     ```
 
-    #### APK-based distributions (Alpine Linux)
+    ### APK
 
     Download the `.apk` packages for your architecture (e.g., `*_linux_amd64.apk` or `*_linux_arm64.apk`), and install using `apk` command.
 
     ```shell
     curl -sSL -o {{ .ProjectName }}.apk "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.apk"
     apk add --allow-untrusted {{ .ProjectName }}.apk
-    ```
-
-    #### Manually
-
-    Download the binaries for your architecture (e.g., `*_linux_amd64` or `*_linux_arm64`), make the binary executable, and move to a directory in your `PATH`.
-
-    ```shell
-    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64"
-    chmod +x {{ .ProjectName }}
-    sudo mv {{ .ProjectName }} /usr/local/bin/{{ .ProjectName }}
-    ```
-
-    ### macOS
-
-    #### Homebrew
-
-    ```shell
-    brew install tmknom/tap/{{ .ProjectName }}
-    ```
-
-    #### Manually
-
-    Download the binaries for your architecture (e.g., `*_darwin_amd64` or `*_darwin_arm64`), make the binary executable, and move to a directory in your `PATH`.
-
-    ```shell
-    curl -sSL -o {{ .ProjectName }} "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_darwin_amd64"
-    chmod +x {{ .ProjectName }}
-    sudo mv {{ .ProjectName }} /usr/local/bin/{{ .ProjectName }}
     ```
 
     ### Container images
