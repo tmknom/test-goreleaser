@@ -193,7 +193,7 @@ jobs:
 
       - name: Cross GoReleaser
         id: goreleaser
-        uses: tmknom/cross-goreleaser-action@main
+        uses: tmknom/cross-goreleaser-action@f488f85702518d310748f0538d023e0f7990074e # v0.2.0
         with:
           configuration-url: https://raw.githubusercontent.com/tmknom/configurations/refs/tags/v0.4.1/goreleaser/verifiable.yml
           homebrew-tap-repository: ${{ inputs.homebrew-tap-repository }}
