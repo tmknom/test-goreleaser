@@ -175,12 +175,12 @@ release:
 
     ## Installation
 
-    Packages downloaded from {{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/ are considered official binaries.
-    We focus on popular operating systems, such as Linux, Windows, and macOS, and CPU architectures, such as amd64 and arm64.
+    You can download official binaries from {{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases .
+    We provide support for popular operating systems like Linux, Windows, and macOS, as well as common CPU architectures such as amd64 and arm64.
 
-    ### Manually
+    ### Manual Installation
 
-    Download the binaries for your operating system and architecture, make the binary executable, and move it to a directory in your `PATH`.
+    Download the binary for your operating system and architecture, make it executable, and move it to a directory in your `PATH`.
     For example, on AMD64 Linux, run the following commands:
 
     ```shell
@@ -189,40 +189,40 @@ release:
     sudo mv {{ .ProjectName }} /usr/local/bin/{{ .ProjectName }}
     ```
 
-    ### Homebrew
+    ### Homebrew Installation
 
     ```shell
     brew install tmknom/tap/{{ .ProjectName }}
     ```
 
-    ### DEB
+    ### DEB Installation
 
-    Download the `.deb` package for your architecture (e.g., `*_linux_amd64.deb` or `*_linux_arm64.deb`), and install it using the `dpkg` command.
+    Download the `.deb` package for your architecture (e.g., `*_linux_amd64.deb` or `*_linux_arm64.deb`), then install it using the `dpkg` command.
 
     ```shell
     curl -sSL -o {{ .ProjectName }}.deb "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.deb"
     dpkg -i {{ .ProjectName }}.deb
     ```
 
-    ### RPM
+    ### RPM Installation
 
-    Download the `.rpm` package for your architecture (e.g., `*_linux_amd64.rpm` or `*_linux_arm64.rpm`), and install it using the `rpm` command.
+    Download the `.rpm` package for your architecture (e.g., `*_linux_amd64.rpm` or `*_linux_arm64.rpm`), then install it using the `rpm` command.
 
     ```shell
     curl -sSL -o {{ .ProjectName }}.rpm "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.rpm"
     rpm -ivh {{ .ProjectName }}.rpm
     ```
 
-    ### APK
+    ### APK Installation
 
-    Download the `.apk` package for your architecture (e.g., `*_linux_amd64.apk` or `*_linux_arm64.apk`), and install it using the `apk` command.
+    Download the `.apk` package for your architecture (e.g., `*_linux_amd64.apk` or `*_linux_arm64.apk`), then install it using the `apk` command.
 
     ```shell
     curl -sSL -o {{ .ProjectName }}.apk "{{ .Env.GITHUB_SERVER_URL }}/{{ .Env.GITHUB_REPOSITORY }}/releases/download/{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_linux_amd64.apk"
     apk add --allow-untrusted {{ .ProjectName }}.apk
     ```
 
-    ### Container images
+    ### Container Images Installation
 
     ```shell
     docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY }}:v{{ .Version }}
