@@ -34,112 +34,17 @@ jobs:
     outputs:
       token: ${{ steps.encrypt.outputs.result }}
     steps:
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
+      - name: Private Generate GitHub Token
+        id: private
+        uses: tmknom/private-generate-github-token-action@8f6837aaee2e81573ff513d8ffb62cc43056dfd7 # v0.1.0
         with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ github.token }}
-
-      - name: Describe encrypted secrets
-        id: encrypted
-        env:
-          IMAGE: ghcr.io/tmknom/internal-secrets/hcp:latest
-        run: |
-          docker pull "${IMAGE}"
-          labels="$(docker inspect "${IMAGE}" | jq -c '.[0].Config.Labels')"
-          echo "::add-mask::${labels}"
-
-          project_id="$(jq -r '.project_id' <<<"${labels}")"
-          echo "::add-mask::${project_id}"
-          echo "project-id=${project_id}" >> "${GITHUB_OUTPUT}"
-
-          service_account="$(jq -r '.service_account' <<<"${labels}")"
-          echo "::add-mask::${service_account}"
-          echo "service-account=${service_account}" >> "${GITHUB_OUTPUT}"
-
-          secrets_app="$(jq -r '.secrets_app' <<<"${labels}")"
-          echo "::add-mask::${secrets_app}"
-          echo "secrets-app=${secrets_app}" >> "${GITHUB_OUTPUT}"
-
-      - name: Decrypt HCP Project ID
-        id: hcp-project-id
-        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
-        with:
-          data: ${{ steps.encrypted.outputs.project-id }}
-          key: key-hcp-project-id-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
-          iv: iv-hcp-project-id-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
-          operation: decrypt
-
-      - name: Decrypt HCP Service Account
-        id: hcp-service-account
-        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
-        with:
-          data: ${{ steps.encrypted.outputs.service-account }}
-          key: key-hcp-service-account-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
-          iv: iv-hcp-service-account-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
-          operation: decrypt
-
-      - name: Decrypt HCP Secrets App
-        id: hcp-secrets-app
-        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
-        with:
-          data: ${{ steps.encrypted.outputs.secrets-app }}
-          key: key-hcp-secrets-app-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
-          iv: iv-hcp-secrets-app-${{ github.repository_owner_id }}-${{ github.repository_owner }}/internal-secrets
-          operation: decrypt
-
-      - name: Generate HCP workload identity provider
-        id: hcp
-        env:
-          PROJECT_ID: ${{ steps.hcp-project-id.outputs.result }}
-          SERVICE_ACCOUNT: ${{ steps.hcp-service-account.outputs.result }}
-          SECRETS_APP: ${{ steps.hcp-secrets-app.outputs.result }}
-        run: |
-          provider="iam/project/${PROJECT_ID}/service-principal/${SERVICE_ACCOUNT}/workload-identity-provider/${SECRETS_APP}"
-          echo "::add-mask::${provider}"
-          echo "provider=${provider}" >> "${GITHUB_OUTPUT}"
-
-      - name: Authenticate to HCP
-        uses: hashicorp/hcp-auth-action@b11d0bff4bbe76283448ddca08a4a4e93c5ed4b9 # v0.1.0
-        with:
-          workload_identity_provider: ${{ steps.hcp.outputs.provider }}
-          audience: ${{ github.repository }}:${{ github.repository_id }}
-        timeout-minutes: 1
-
-      - name: Download hcp CLI
-        uses: hashicorp/hcp-setup-action@fa6934c14c661dfbe9b6cf9c47ddb41759d625aa # v0.1.0
-        with:
-          version: latest
-
-      - name: Describe GitHub Apps credentials
-        id: github
-        env:
-          SECRETS_APP: ${{ steps.hcp-secrets-app.outputs.result }}
-        run: |
-          secrets=(hcp vault-secrets secrets open --app "${SECRETS_APP}" --format=json)
-
-          PR_WRITER_APP_ID="$("${secrets[@]}" PR_WRITER_APP_ID | jq -r '.static_version.value')"
-          echo "::add-mask::${PR_WRITER_APP_ID}"
-          echo "app-id=${PR_WRITER_APP_ID}" >> "${GITHUB_OUTPUT}"
-
-          key_file="${RUNNER_TEMP}/private.key"
-          "${secrets[@]}" PR_WRITER_APP_PRIVATE_KEY | jq -r '.static_version.value' > "${key_file}"
-          echo "app-private-key-file=${key_file}" >> "${GITHUB_OUTPUT}"
-
-      - name: Generate GitHub Token
-        id: app
-        uses: tmknom/generate-github-token-action@e0f9098bfea71c5b68642fcbd1c2e690932856b1 # v0.1.0
-        with:
-          app-id: ${{ steps.github.outputs.app-id }}
-          app-private-key-file: ${{ steps.github.outputs.app-private-key-file }}
           repositories: ${{ inputs.homebrew-tap-repository }}
 
       - name: Encrypt token
         id: encrypt
         uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
         with:
-          data: ${{ steps.app.outputs.token }}
+          data: ${{ steps.private.outputs.token }}
           operation: encrypt
 
   release:
