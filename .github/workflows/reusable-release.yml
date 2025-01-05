@@ -104,6 +104,12 @@ jobs:
           homebrew-tap-repository: ${{ inputs.homebrew-tap-repository }}
           homebrew-tap-github-token: ${{ steps.decrypt.outputs.result }}
 
+      - name: Revoke GitHub Token
+        if: ${{ always() }}
+        uses: tmknom/revoke-github-token-action@3ab58f0a8cc1f0911d071e243343bc0a003d0d1b # v0.1.0
+        with:
+          token: ${{ steps.decrypt.outputs.result }}
+
       - name: Attest binaries
         uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
         with:
