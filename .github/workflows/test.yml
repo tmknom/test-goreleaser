@@ -2,7 +2,7 @@ name: Test
 on:
   workflow_dispatch:
   pull_request:
-    paths: [".github/workflows/test.yml"]
+    paths: ["action.yml", ".github/workflows/test.yml"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,21 +10,72 @@ concurrency:
 
 permissions: {}
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  install-deb:
+  test:
+    name: Test
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
     steps:
-      - name: Checkout
+      - name: Checkout default branch
         uses: tmknom/checkout-action@v1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
 
-      - name: Install
+      - name: Git Config
+        uses: tmknom/git-config-action@970621c4819d5a601bbac4a2bcf6f5f80d92a2e6 # v0.2.0
+
+      - name: Setup
+        id: setup
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
-          gh release download v0.12.1
-          sudo dpkg -i test-goreleaser_0.12.1_amd64.deb
-          test-goreleaser --help
+          base_branch="test-base/${GITHUB_JOB}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          pr_branch="test-pr/${GITHUB_JOB}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          echo "base-branch=${base_branch}" >> "${GITHUB_OUTPUT}"
+          echo "pr-branch=${pr_branch}" >> "${GITHUB_OUTPUT}"
+
+          git switch -c "${base_branch}"
+          git push origin "${base_branch}"
+
+          title="Test for ${GITHUB_JOB}: ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "${pr_branch}" "${base_branch}"
+          git commit -m "${title}" --allow-empty
+          git push origin "${pr_branch}"
+          gh pr create --base "${base_branch}" --head "${pr_branch}" --title "${title}"
+
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
+
+      - name: Exercise
+        uses: tmknom/merge-pr-action@feat/add-action
+        with:
+          pull-request: ${{ steps.setup.outputs.pr-branch }}
+
+      - name: Verify
+        env:
+          PR_BRANCH: ${{ steps.setup.outputs.pr-branch }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          result="$(gh pr view "${PR_BRANCH}" --json state --jq .state)"
+          test "${result}" = "MERGED"
+
+      - name: Teardown
+        if: ${{ always() }}
+        env:
+          BASE_BRANCH: ${{ steps.setup.outputs.base-branch }}
+          PR_BRANCH: ${{ steps.setup.outputs.pr-branch }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          gh pr close "${PR_BRANCH}" || true
+          git push origin "${PR_BRANCH}" --delete || true
+          git push origin "${BASE_BRANCH}" --delete || true
