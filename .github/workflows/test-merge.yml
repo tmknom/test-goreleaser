@@ -1,0 +1,23 @@
+name: Test Merge
+on:
+  pull_request:
+    paths: [".github/workflows/test-merge.yml"]
+
+concurrency: ${{ github.workflow }}
+
+permissions: {}
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
+
+      - name: Merge PR
+        uses: tmknom/merge-pr-action@feat/add-action
+        with:
+          pull-request: ${{ github.event.pull_request.number }}
