@@ -1,0 +1,50 @@
+name: Merge
+on:
+  pull_request:
+    paths: ["action.yml", ".github/workflows/*.yml"]
+
+concurrency: ${{ github.workflow }}
+
+permissions: {}
+
+jobs:
+  merge:
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
+
+      - name: Fetch metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@dbb049abf0d677abbd7f7eee0375145b417fdd34 # v2.2.0
+
+      - name: Approve
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          gh pr review "${GITHUB_HEAD_REF}" --approve
+
+      - name: Merge
+        if: >-
+          ${{ steps.metadata.outputs.package-ecosystem == 'github_actions' &&
+              steps.metadata.outputs.update-type != 'version-update:semver-major' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -x
+          auto="$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${GITHUB_REPOSITORY}" \
+            --jq '.allow_auto_merge')"
+
+          declare -a flags=(--merge)
+          if [[ "${auto}" == "true" ]]; then
+            flags+=(--auto)
+          fi
+          gh pr merge "${GITHUB_HEAD_REF}" "${flags[@]}"
