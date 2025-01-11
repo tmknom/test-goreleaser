@@ -45,7 +45,7 @@ jobs:
           git switch -c "${base_branch}"
           git push origin "${base_branch}"
 
-          title="Test for ${GITHUB_JOB}: ${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          title="dummy: test merge to ${base_branch} branch"
           git switch -c "${pr_branch}" "${base_branch}"
           git commit -m "${title}" --allow-empty
           git push origin "${pr_branch}"
