@@ -55,16 +55,19 @@ jobs:
         uses: tmknom/checkout-action@v1
 
       - name: Exercise
+        id: exercise
         uses: tmknom/merge-pr-action@feat/add-support-for-auto-merge
         with:
           pull-request: ${{ steps.setup.outputs.pr-branch }}
 
       - name: Verify
         env:
+          AUTO_MERGE: ${{ steps.exercise.outputs.auto-merge }}
           PR_BRANCH: ${{ steps.setup.outputs.pr-branch }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
+          test "${AUTO_MERGE}" = "true"
           result="$(gh pr view "${PR_BRANCH}" --json state --jq .state)"
           test "${result}" = "MERGED"
 
