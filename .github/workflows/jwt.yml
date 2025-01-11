@@ -1,0 +1,27 @@
+name: Extract job_workflow_ref from OIDC Token
+
+on:
+  workflow_dispatch:
+
+jobs:
+  extract-jwt:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Set up OIDC token
+        id: oidc-token
+        env:
+          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
+          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
+        run: |
+          TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
+          echo "OIDC_TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      - name: Decode and extract job_workflow_ref
+        run: |
+          OIDC_PAYLOAD=$(echo "${OIDC_TOKEN}" | cut -d '.' -f 2 | base64 -d | jq .)
+          JOB_WORKFLOW_REF=$(echo "${OIDC_PAYLOAD}" | jq -r '.job_workflow_ref')
+
+          echo "job_workflow_ref: $JOB_WORKFLOW_REF"
+          echo "JOB_WORKFLOW_REF=$JOB_WORKFLOW_REF" >> $GITHUB_ENV
