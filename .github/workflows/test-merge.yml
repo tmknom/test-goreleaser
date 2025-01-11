@@ -1,7 +1,6 @@
 name: Test Merge
 on:
-  pull_request:
-    paths: [".github/workflows/test-merge.yml"]
+  workflow_dispatch:
 
 concurrency: ${{ github.workflow }}
 
