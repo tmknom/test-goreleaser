@@ -49,7 +49,7 @@ jobs:
           git switch -c "${pr_branch}" "${base_branch}"
           git commit -m "${title}" --allow-empty
           git push origin "${pr_branch}"
-          gh pr create --base "${base_branch}" --head "${pr_branch}" --title "${title}"
+          gh pr create --base "${base_branch}" --head "${pr_branch}" --title "${title}" --body ""
 
       - name: Checkout
         uses: tmknom/checkout-action@v1
