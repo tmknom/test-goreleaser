@@ -1,4 +1,4 @@
-name: Extract job_workflow_ref from OIDC Token
+name: job_workflow_ref
 
 on:
   workflow_dispatch:
@@ -15,13 +15,10 @@ jobs:
           ACTIONS_ID_TOKEN_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
           ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
         run: |
-          TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
-          echo "OIDC_TOKEN=$TOKEN" >> $GITHUB_ENV
-
-      - name: Decode and extract job_workflow_ref
-        run: |
-          OIDC_PAYLOAD=$(echo "${OIDC_TOKEN}" | cut -d '.' -f 2 | base64 -d | jq .)
+          OIDC_TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
+          echo "::add-mask::${OIDC_TOKEN}"
+          set -x
+          payload="$(echo "${OIDC_TOKEN}" | cut -d '.' -f 2)"
+          OIDC_PAYLOAD=$(base64 -d <<<"${payload}" | jq .)
           JOB_WORKFLOW_REF=$(echo "${OIDC_PAYLOAD}" | jq -r '.job_workflow_ref')
-
           echo "job_workflow_ref: $JOB_WORKFLOW_REF"
-          echo "JOB_WORKFLOW_REF=$JOB_WORKFLOW_REF" >> $GITHUB_ENV
