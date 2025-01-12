@@ -50,7 +50,7 @@ jobs:
         uses: dependabot/fetch-metadata@dbb049abf0d677abbd7f7eee0375145b417fdd34 # v2.2.0
 
       - name: Validate package ecosystem
-        uses: tmknom/validation-action@v0
+        uses: tmknom/validation-action@f654c365b696d6053efe5fb299e8d6ea2bb9f3c8 # v0.3.0
         with:
           enum: github_actions
           value: ${{ steps.metadata.outputs.package-ecosystem }}
@@ -87,6 +87,6 @@ jobs:
 
       - name: Merge PR
         if: ${{ steps.check.outputs.mergeable == 'true' }}
-        uses: tmknom/merge-pr-action@v0.1.0
+        uses: tmknom/merge-pr-action@b3282fa89f36b6c7898b194b1f7287dd09249d09 # v0.1.0
         with:
           pull-request: ${{ inputs.pull-request }}
