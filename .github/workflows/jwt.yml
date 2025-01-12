@@ -5,6 +5,7 @@ on:
 
 jobs:
   call:
-    uses: tmknom/test-goreleaser/.github/workflows/reusable-jwt.yml@2c2d91ecdbb0f3e80354098ee13fba1ec59b4dd4
+    uses: ./.github/workflows/reusable-jwt.yml
+    # uses: tmknom/test-goreleaser/.github/workflows/reusable-jwt.yml@2c2d91ecdbb0f3e80354098ee13fba1ec59b4dd4
     permissions:
       id-token: write
