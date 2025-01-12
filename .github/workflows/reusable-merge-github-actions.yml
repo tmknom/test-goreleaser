@@ -49,15 +49,11 @@ jobs:
         id: metadata
         uses: dependabot/fetch-metadata@dbb049abf0d677abbd7f7eee0375145b417fdd34 # v2.2.0
 
-      - name: Verify package ecosystem
-        env:
-          EXPECTED: github_actions
-          ACTUAL: ${{ steps.metadata.outputs.package-ecosystem }}
-        run: |
-          set -x
-          if [[ "${EXPECTED}" != "${ACTUAL}" ]]; then
-            exit 1
-          fi
+      - name: Validate package ecosystem
+        uses: tmknom/validation-action@v0
+        with:
+          enum: github_actions
+          value: ${{ steps.metadata.outputs.package-ecosystem }}
 
       - name: Check mergeable
         id: check

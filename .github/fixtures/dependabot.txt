@@ -1,0 +1,2 @@
+Author: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+Branch: dependabot/github_actions/actions/checkout-4.2.2
