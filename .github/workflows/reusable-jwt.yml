@@ -24,7 +24,7 @@ jobs:
           OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
           set -x
-          base64_payload="$(cut -d '.' -f 2 <<<"${OIDC_TOKEN}")"
+          base64_payload="$(cut -d '.' -f 2 <<<"${OIDC_TOKEN}" | tr -d '\n')"
           payload=$(base64 -d <<<"${base64_payload}" | jq .)
           job_workflow_ref=$(jq -r '.job_workflow_ref' <<<"${payload}")
           echo "job_workflow_ref: ${job_workflow_ref}"
