@@ -25,6 +25,10 @@ jobs:
         run: |
           set -x
           base64_payload="$(cut -d '.' -f 2 <<<"${OIDC_TOKEN}" | tr '-' '+' | tr '_' '/')"
+          padding=$((4 - (${#base64_payload} % 4)))
+          if [ $padding -ne 4 ]; then
+            base64_payload="${base64_payload}$(printf '=%.0s' $(seq 1 "${padding}"))"
+          fi
           payload=$(base64 -d <<<"${base64_payload}" | jq .)
           job_workflow_ref=$(jq -r '.job_workflow_ref' <<<"${payload}")
           echo "job_workflow_ref: ${job_workflow_ref}"
