@@ -45,7 +45,7 @@ jobs:
           git switch -c "${base_branch}"
           git push origin "${base_branch}"
 
-          title="dummy: merge to ${base_branch}"
+          title="dummy: approve to ${pr_branch}"
           git switch -c "${pr_branch}" "${base_branch}"
           git commit -m "${title}" --allow-empty
           git push origin "${pr_branch}"
@@ -55,21 +55,18 @@ jobs:
         uses: tmknom/checkout-action@v1
 
       - name: Exercise
-        id: exercise
-        uses: tmknom/merge-pr-action@feat/add-support-for-auto-merge
+        uses: tmknom/approve-pr-action@feat/add-action
         with:
           pull-request: ${{ steps.setup.outputs.pr-branch }}
 
       - name: Verify
         env:
-          AUTO_MERGE: ${{ steps.exercise.outputs.auto-merge }}
           PR_BRANCH: ${{ steps.setup.outputs.pr-branch }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
-          test "${AUTO_MERGE}" = "true"
-          result="$(gh pr view "${PR_BRANCH}" --json state --jq .state)"
-          test "${result}" = "MERGED"
+          result="$(gh pr view "${PR_BRANCH}" --json reviews --jq '.reviews[].state')"
+          test "${result}" = "APPROVED"
 
       - name: Teardown
         if: ${{ always() }}
