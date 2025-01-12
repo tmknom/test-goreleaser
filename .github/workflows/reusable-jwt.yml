@@ -28,7 +28,7 @@ jobs:
           remainder=$(( ${#base64_payload} % 4 ))
           if [[ "${remainder}" != 0 ]]; then
             padding=$(( 4 - remainder ))
-            base64_payload="${base64_payload}$(printf '=%.0s' {1.."${padding}"})"
+            base64_payload="${base64_payload}$(printf '=%.0s' "{1..${padding}}")"
           fi
           payload=$(base64 -d <<<"${base64_payload}" | jq .)
           job_workflow_ref=$(jq -r '.job_workflow_ref' <<<"${payload}")
