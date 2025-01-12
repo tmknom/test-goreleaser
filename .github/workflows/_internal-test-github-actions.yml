@@ -51,7 +51,7 @@ jobs:
         id: dependabot
         env:
           COMMIT_MESSAGE_FILE: .github/fixtures/github-actions.txt
-          DEPENDABOT_BRANCH: dependabot/github_actions/actions/checkout-4.2.2
+          DEPENDABOT_BRANCH: dependabot/github_actions/actions/checkout2-4.2.2
           BASE_BRANCH: ${{ steps.base.outputs.branch }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
