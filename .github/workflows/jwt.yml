@@ -4,21 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  extract-jwt:
-    runs-on: ubuntu-latest
+  call:
+    uses: ./.github/workflows/reusable-jwt.yml
     permissions:
       id-token: write
-    steps:
-      - name: Set up OIDC token
-        id: oidc-token
-        env:
-          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
-          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
-        run: |
-          OIDC_TOKEN=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
-          echo "::add-mask::${OIDC_TOKEN}"
-          set -x
-          payload="$(echo "${OIDC_TOKEN}" | cut -d '.' -f 2)"
-          OIDC_PAYLOAD=$(base64 -d <<<"${payload}" | jq .)
-          JOB_WORKFLOW_REF=$(echo "${OIDC_PAYLOAD}" | jq -r '.job_workflow_ref')
-          echo "job_workflow_ref: $JOB_WORKFLOW_REF"
