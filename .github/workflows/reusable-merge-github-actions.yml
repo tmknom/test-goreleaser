@@ -79,12 +79,9 @@ jobs:
 
       - name: Approve PR
         if: ${{ steps.check.outputs.mergeable == 'true' }}
-        env:
-          PULL_REQUEST: ${{ inputs.pull-request }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -x
-          gh pr review "${PULL_REQUEST}" --approve
+        uses: tmknom/approve-pr-action@8542c6214a4d7e2c116fe7b4c783918ea79a0e06 # v0.1.0
+        with:
+          pull-request: ${{ inputs.pull-request }}
 
       - name: Merge PR
         if: ${{ steps.check.outputs.mergeable == 'true' }}
