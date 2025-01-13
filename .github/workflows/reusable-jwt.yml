@@ -1,35 +1,145 @@
-name: Reusable jwt
+name: Reusable JWT
 
 on:
   workflow_call:
 
 jobs:
-  extract-jwt:
+  extract:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       id-token: write
     steps:
-      - name: Setup OIDC Token
-        id: oidc
+      - name: Request ID Token
+        id: id-token
         env:
-          ACTIONS_ID_TOKEN_REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
-          ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
+          REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
+          REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
         run: |
-          token=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
+          echo "${REQUEST_URL}"
+          token=$(curl -sS -H "Authorization: Bearer ${REQUEST_TOKEN}" "${REQUEST_URL}")
           echo "::add-mask::${token}"
-          echo "token=${token}" >> "${GITHUB_OUTPUT}"
+          echo "header=$(cut -d '.' -f 1 <<<"${token}")" >> "${GITHUB_OUTPUT}"
+          echo "payload=$(cut -d '.' -f 2 <<<"${token}")" >> "${GITHUB_OUTPUT}"
 
-      - name: Parse
+      - name: Decode header
+        id: header
         env:
-          OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+          JWT: ${{ steps.id-token.outputs.header }}
         run: |
           set -x
-          base64_payload="$(cut -d '.' -f 2 <<<"${OIDC_TOKEN}" | tr '-' '+' | tr '_' '/')"
-          remainder=$(( ${#base64_payload} % 4 ))
+          base64_encoded="$(tr '_-' '/+' <<<"${JWT}")"
+          remainder=$(( ${#base64_encoded} % 4 ))
           if [[ "${remainder}" != 0 ]]; then
-            padding=$(( 4 - remainder ))
-            base64_payload="${base64_payload}$(printf '=%.0s' "{1..${padding}}")"
+            difference=$(( 4 - remainder ))
+            padding="$(printf '=%.0s' "{1..${difference}}")"
+            base64_encoded="${base64_encoded}${padding}"
           fi
-          payload=$(base64 -d <<<"${base64_payload}" | jq .)
-          job_workflow_ref=$(jq -r '.job_workflow_ref' <<<"${payload}")
-          echo "job_workflow_ref: ${job_workflow_ref}"
+          decoded="$(base64 -d <<<"${base64_encoded}" | jq -c .)"
+          echo "json=${decoded}" >> "${GITHUB_OUTPUT}"
+
+      - name: Decode payload
+        id: payload
+        env:
+          JWT: ${{ steps.id-token.outputs.payload }}
+        run: |
+          set -x
+          base64_encoded="$(tr '_-' '/+' <<<"${JWT}")"
+          remainder=$(( ${#base64_encoded} % 4 ))
+          if [[ "${remainder}" != 0 ]]; then
+            difference=$(( 4 - remainder ))
+            padding="$(printf '=%.0s' "{1..${difference}}")"
+            base64_encoded="${base64_encoded}${padding}"
+          fi
+          decoded="$(base64 -d <<<"${base64_encoded}" | jq -c .)"
+          echo "json=${decoded}" >> "${GITHUB_OUTPUT}"
+
+      - name: Show header
+        env:
+          HEADER: ${{ steps.header.outputs.json }}
+        run: |
+          jq . <<<"${HEADER}"
+
+      - name: Show payload
+        env:
+          PAYLOAD: ${{ steps.payload.outputs.json }}
+        run: |
+          jq . <<<"${PAYLOAD}"
+
+      - name: Parse payload
+        env:
+          PAYLOAD: ${{ steps.payload.outputs.json }}
+        run: |
+          set -x
+          {
+            echo "sub=$(jq -r '.sub' <<<"${PAYLOAD}")"
+            echo "iat=$(jq -r '.iat' <<<"${PAYLOAD}")"
+            echo "aud=$(jq -r '.aud' <<<"${PAYLOAD}")"
+            echo "jti=$(jq -r '.jti' <<<"${PAYLOAD}")"
+            echo "job_workflow_ref=$(jq -r '.job_workflow_ref' <<<"${PAYLOAD}")"
+            echo "job_workflow_sha=$(jq -r '.job_workflow_sha' <<<"${PAYLOAD}")"
+          } >> "${GITHUB_OUTPUT}"
+
+  action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Request ID Token
+        id: id-token
+        uses: ./.github/actions/request-id-token-action/
+
+      - name: Show header
+        env:
+          HEADER: ${{ steps.id-token.outputs.jwt-header }}
+        run: |
+          jq . <<<"${HEADER}"
+
+      - name: Show payload
+        env:
+          PAYLOAD: ${{ steps.id-token.outputs.jwt-payload }}
+        run: |
+          jq . <<<"${PAYLOAD}"
+
+      - name: Show
+        env:
+          JOB_WORKFLOW_REF: ${{ steps.id-token.outputs.job-workflow-ref }}
+          JOB_WORKFLOW_SHA: ${{ steps.id-token.outputs.job-workflow-sha }}
+        run: |
+          echo "JOB_WORKFLOW_REF: ${JOB_WORKFLOW_REF}"
+          echo "JOB_WORKFLOW_SHA: ${JOB_WORKFLOW_SHA}"
+
+# {
+#   "jti": "f04ec113-ffb1-45df-a763-8c0c38533d3f",
+#   "sub": "repo:tmknom/test-goreleaser:ref:refs/heads/main",
+#   "aud": "https://github.com/tmknom",
+#   "ref": "refs/heads/main",
+#   "sha": "98ebcecb092d179526cb3200bab311bd1934ed20",
+#   "repository": "tmknom/test-goreleaser",
+#   "repository_owner": "tmknom",
+#   "repository_owner_id": "3865036",
+#   "run_id": "12732586816",
+#   "run_number": "4",
+#   "run_attempt": "1",
+#   "repository_visibility": "public",
+#   "repository_id": "422815758",
+#   "actor_id": "3865036",
+#   "actor": "tmknom",
+#   "workflow": "job_workflow_ref",
+#   "head_ref": "",
+#   "base_ref": "",
+#   "event_name": "workflow_dispatch",
+#   "ref_protected": "false",
+#   "ref_type": "branch",
+#   "workflow_ref": "tmknom/test-goreleaser/.github/workflows/jwt.yml@refs/heads/main",
+#   "workflow_sha": "98ebcecb092d179526cb3200bab311bd1934ed20",
+#   "job_workflow_ref": "tmknom/test-goreleaser/.github/workflows/reusable-jwt.yml@2c2d91ecdbb0f3e80354098ee13fba1ec59b4dd4",
+#   "job_workflow_sha": "2c2d91ecdbb0f3e80354098ee13fba1ec59b4dd4",
+#   "runner_environment": "github-hosted",
+#   "iss": "https://token.actions.githubusercontent.com",
+#   "nbf": 1736676198,
+#   "exp": 1736677098,
+#   "iat": 1736676798
+# }

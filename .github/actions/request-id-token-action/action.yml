@@ -1,0 +1,114 @@
+name: Request ID Token
+description: |
+  This action requests ID Token to GitHub OpenID Connect Provider.
+
+  ## Usage
+
+  ```yaml
+    steps:
+      - name: Request ID Token
+        uses: tmknom/request-id-token-action@v0
+  ```
+
+outputs:
+  jwt-header:
+    value: ${{ steps.header.outputs.json }}
+    description: The decoded JWT header.
+  jwt-payload:
+    value: ${{ steps.payload.outputs.json }}
+    description: The decoded JWT payload.
+  job-workflow-ref:
+    value: ${{ steps.parse.outputs.job-workflow-ref }}
+    description: The job_workflow_ref claim.
+  job-workflow-sha:
+    value: ${{ steps.parse.outputs.job-workflow-sha }}
+    description: The job_workflow_sha claim.
+
+runs:
+  using: composite
+
+  steps:
+    - name: Request ID Token
+      id: id-token
+      env:
+        REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
+        REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
+      run: |
+        token=$(curl -sS -H "Authorization: Bearer ${REQUEST_TOKEN}" "${REQUEST_URL}")
+        echo "::add-mask::${token}"
+        echo "header=$(cut -d '.' -f 1 <<<"${token}")" >> "${GITHUB_OUTPUT}"
+        echo "payload=$(cut -d '.' -f 2 <<<"${token}")" >> "${GITHUB_OUTPUT}"
+      shell: bash
+
+    - name: Decode header
+      id: header
+      env:
+        JWT: ${{ steps.id-token.outputs.header }}
+      run: |
+        echo "::group::Decode header"
+        set -x
+        base64_encoded="$(tr '_-' '/+' <<<"${JWT}")"
+        remainder=$(( ${#base64_encoded} % 4 ))
+        if [[ "${remainder}" != 0 ]]; then
+          difference=$(( 4 - remainder ))
+          padding="$(printf '=%.0s' "{1..${difference}}")"
+          base64_encoded="${base64_encoded}${padding}"
+        fi
+        decoded="$(base64 -d <<<"${base64_encoded}" | jq -c .)"
+        echo "json=${decoded}" >> "${GITHUB_OUTPUT}"
+        echo "::endgroup::"
+      shell: bash
+
+    - name: Decode payload
+      id: payload
+      env:
+        JWT: ${{ steps.id-token.outputs.payload }}
+      run: |
+        echo "::group::Decode header"
+        set -x
+        base64_encoded="$(tr '_-' '/+' <<<"${JWT}")"
+        remainder=$(( ${#base64_encoded} % 4 ))
+        if [[ "${remainder}" != 0 ]]; then
+          difference=$(( 4 - remainder ))
+          padding="$(printf '=%.0s' "{1..${difference}}")"
+          base64_encoded="${base64_encoded}${padding}"
+        fi
+        decoded="$(base64 -d <<<"${base64_encoded}" | jq -c .)"
+        echo "json=${decoded}" >> "${GITHUB_OUTPUT}"
+        echo "::endgroup::"
+      shell: bash
+
+    - name: Show header
+      env:
+        HEADER: ${{ steps.header.outputs.json }}
+      run: |
+        echo "::group::Show header"
+        jq . <<<"${HEADER}"
+        echo "::endgroup::"
+      shell: bash
+
+    - name: Show payload
+      env:
+        PAYLOAD: ${{ steps.payload.outputs.json }}
+      run: |
+        echo "::group::Show payload"
+        jq . <<<"${PAYLOAD}"
+        echo "::endgroup::"
+      shell: bash
+
+    - name: Parse
+      id: parse
+      env:
+        PAYLOAD: ${{ steps.payload.outputs.json }}
+      run: |
+        echo "::group::Show payload"
+        set -x
+        {
+          echo "sub=$(jq -r '.sub' <<<"${PAYLOAD}")"
+          echo "iat=$(jq -r '.iat' <<<"${PAYLOAD}")"
+          echo "aud=$(jq -r '.aud' <<<"${PAYLOAD}")"
+          echo "jti=$(jq -r '.jti' <<<"${PAYLOAD}")"
+          echo "job-workflow-ref=$(jq -r '.job_workflow_ref' <<<"${PAYLOAD}")"
+          echo "job-workflow-sha=$(jq -r '.job_workflow_sha' <<<"${PAYLOAD}")"
+        } >> "${GITHUB_OUTPUT}"
+      shell: bash
