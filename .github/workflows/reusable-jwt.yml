@@ -12,12 +12,13 @@ jobs:
     steps:
       - name: Request ID Token
         id: id-token
-        # env:
-        #   REQUEST_URL: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_URL }}
-        #   REQUEST_TOKEN: ${{ secrets.ACTIONS_ID_TOKEN_REQUEST_TOKEN }}
         run: |
-          echo "${ACTIONS_ID_TOKEN_REQUEST_URL}"
-          token=$(curl -sS -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${ACTIONS_ID_TOKEN_REQUEST_URL}")
+          token=$(curl -sS \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            -H "Accept: application/json; api-version=2.0" \
+            -H "Content-Type: application/json" \
+            -d "{}" "${ACTIONS_ID_TOKEN_REQUEST_URL}" | \
+            jq -r '.value')
           echo "::add-mask::${token}"
           echo "header=$(cut -d '.' -f 1 <<<"${token}")" >> "${GITHUB_OUTPUT}"
           echo "payload=$(cut -d '.' -f 2 <<<"${token}")" >> "${GITHUB_OUTPUT}"
@@ -28,11 +29,12 @@ jobs:
           JWT: ${{ steps.id-token.outputs.header }}
         run: |
           set -x
+          echo "${JWT}"
           base64_encoded="$(tr '_-' '/+' <<<"${JWT}")"
           remainder=$(( ${#base64_encoded} % 4 ))
           if [[ "${remainder}" != 0 ]]; then
             difference=$(( 4 - remainder ))
-            padding="$(printf '=%.0s' "{1..${difference}}")"
+            padding="$(printf '=%.0s' $(seq 1 "${difference}"))"
             base64_encoded="${base64_encoded}${padding}"
           fi
           decoded="$(base64 -d <<<"${base64_encoded}" | jq -c .)"
@@ -48,7 +50,7 @@ jobs:
           remainder=$(( ${#base64_encoded} % 4 ))
           if [[ "${remainder}" != 0 ]]; then
             difference=$(( 4 - remainder ))
-            padding="$(printf '=%.0s' "{1..${difference}}")"
+            padding="$(printf '=%.0s' $(seq 1 "${difference}"))"
             base64_encoded="${base64_encoded}${padding}"
           fi
           decoded="$(base64 -d <<<"${base64_encoded}" | jq -c .)"
