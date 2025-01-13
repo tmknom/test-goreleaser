@@ -28,4 +28,4 @@ jobs:
       - name: Approve PR
         uses: tmknom/approve-pr-action@feat/add-action
         with:
-          pull-request: 10
+          pull-request: 314
