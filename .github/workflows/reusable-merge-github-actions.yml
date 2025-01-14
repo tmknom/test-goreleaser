@@ -60,9 +60,9 @@ jobs:
           enum: github_actions
           value: ${{ steps.metadata.outputs.package-ecosystem || 'github_actions' }}
 
-      - name: Check Mergeable
+      - name: Validate Dependabot Mergeable
         id: check
-        uses: tmknom/check-mergeable-action@feat/add-action
+        uses: tmknom/validate-dependabot-mergeable-action@e6938df544c3b522d591205b16d47b3f692c4fff # v0.1.0
         with:
           update-type: ${{ steps.metadata.outputs.update-type || inputs.update-type }}
           patch: ${{ inputs.patch }}
