@@ -69,6 +69,7 @@ jobs:
     with:
       pull-request: ${{ needs.setup.outputs.dependabot-branch }}
       github-actor: ${{ github.repository_owner }}
+      update-type: version-update:semver-patch
     permissions:
       contents: write
       pull-requests: write
