@@ -21,6 +21,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      id-token: write
+      packages: write
     outputs:
       base-branch: ${{ steps.base.outputs.branch }}
       dependabot-branch: ${{ steps.dependabot.outputs.branch }}
@@ -38,8 +40,6 @@ jobs:
 
       - name: Create base branch
         id: base
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
           branch="pseudo/${GITHUB_JOB}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
@@ -47,13 +47,20 @@ jobs:
           git switch -c "${branch}"
           git push origin "${branch}"
 
+      # TODO Change secrets name
+      - name: Private Generate GitHub Token
+        id: gha
+        uses: tmknom/private-generate-github-token-action@4c7789e087fbab67f1e9e7eeb0312c1a27eb2ef3 # v0.1.2
+        with:
+          repositories: test-goreleaser # TODO
+
       - name: Create dependabot branch
         id: dependabot
         env:
           PACKAGE_ECOSYSTEM: github_actions
           COMMIT_MESSAGE_FILE: .github/fixtures/github_actions.txt
           BASE_BRANCH: ${{ steps.base.outputs.branch }}
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ steps.gha.outputs.token }}
         run: |
           set -x
           branch="dependabot/${PACKAGE_ECOSYSTEM}/pseudo/repo/${GITHUB_JOB}${GITHUB_RUN_ID}${GITHUB_RUN_ATTEMPT}-1.2.3"
@@ -62,6 +69,12 @@ jobs:
           git commit -m "$(cat "${COMMIT_MESSAGE_FILE}")" --allow-empty
           git push origin "${branch}"
           gh pr create --base "${BASE_BRANCH}" --head "${branch}" --fill-first
+
+      - name: Revoke GitHub Token
+        if: ${{ always() }}
+        uses: tmknom/revoke-github-token-action@3ab58f0a8cc1f0911d071e243343bc0a003d0d1b # v0.1.0
+        with:
+          token: ${{ steps.gha.outputs.token }}
 
   exercise:
     needs: [setup]
