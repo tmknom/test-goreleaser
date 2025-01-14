@@ -14,26 +14,20 @@ jobs:
       - name: Checkout
         uses: tmknom/checkout-action@v1
 
-      - name: Request ID Token
-        id: id-token
-        uses: ./.github/actions/request-id-token-action/
-
-      - name: Show header
-        env:
-          HEADER: ${{ steps.id-token.outputs.jwt-header }}
-        run: |
-          jq . <<<"${HEADER}"
+      - name: Retrieve OIDC Token
+        id: oidc
+        uses: ./.github/actions/retrieve-oidc-token-action/
 
       - name: Show payload
         env:
-          PAYLOAD: ${{ steps.id-token.outputs.jwt-payload }}
+          PAYLOAD: ${{ steps.oidc.outputs.payload }}
         run: |
           jq . <<<"${PAYLOAD}"
 
       - name: Show
         env:
-          JOB_WORKFLOW_REF: ${{ steps.id-token.outputs.job-workflow-ref }}
-          JOB_WORKFLOW_SHA: ${{ steps.id-token.outputs.job-workflow-sha }}
+          JOB_WORKFLOW_REF: ${{ steps.oidc.outputs.job-workflow-ref }}
+          JOB_WORKFLOW_SHA: ${{ steps.oidc.outputs.job-workflow-sha }}
         run: |
           echo "JOB_WORKFLOW_REF: ${JOB_WORKFLOW_REF}"
           echo "JOB_WORKFLOW_SHA: ${JOB_WORKFLOW_SHA}"

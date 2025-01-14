@@ -1,28 +1,26 @@
-name: Request ID Token
+name: Retrieve OIDC Token
 description: |
-  This action requests ID Token to GitHub OpenID Connect Provider.
+  This action retrieves OIDC token's claims from GitHub OpenID Connect Provider.
+  Use this action, you can get JWT claims such as `sub`, `workflow` and `job_workflow_ref`.
 
   ## Usage
 
   ```yaml
     steps:
-      - name: Request ID Token
-        uses: tmknom/request-id-token-action@v0
+      - name: Retrieve OIDC Token
+        uses: tmknom/retrieve-oidc-token-action@v0
   ```
 
 outputs:
-  jwt-header:
-    value: ${{ steps.header.outputs.json }}
-    description: The decoded JWT header.
-  jwt-payload:
+  payload:
     value: ${{ steps.payload.outputs.json }}
-    description: The decoded JWT payload.
+    description: The JWT payload included OIDC token as plain JSON.
   job-workflow-ref:
     value: ${{ steps.parse.outputs.job-workflow-ref }}
-    description: The job_workflow_ref claim.
+    description: The `job_workflow_ref` claim.
   job-workflow-sha:
     value: ${{ steps.parse.outputs.job-workflow-sha }}
-    description: The job_workflow_sha claim.
+    description: The `job_workflow_sha` claim.
 
 runs:
   using: composite
@@ -31,34 +29,14 @@ runs:
     - name: Request ID Token
       id: id-token
       run: |
-        token=$(curl -sS \
+        token=$(curl --silent --show-error \
           -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
           -H "Accept: application/json; api-version=2.0" \
           -H "Content-Type: application/json" \
           -d "{}" "${ACTIONS_ID_TOKEN_REQUEST_URL}" | \
           jq -r '.value')
         echo "::add-mask::${token}"
-        echo "header=$(cut -d '.' -f 1 <<<"${token}")" >> "${GITHUB_OUTPUT}"
         echo "payload=$(cut -d '.' -f 2 <<<"${token}")" >> "${GITHUB_OUTPUT}"
-      shell: bash
-
-    - name: Decode header
-      id: header
-      env:
-        JWT: ${{ steps.id-token.outputs.header }}
-      run: |
-        echo "::group::Decode header"
-        set -x
-        base64_encoded="$(tr '_-' '/+' <<<"${JWT}")"
-        remainder=$(( ${#base64_encoded} % 4 ))
-        if [[ "${remainder}" != 0 ]]; then
-          difference=$(( 4 - remainder ))
-          padding="$(printf '=%.0s' $(seq 1 "${difference}"))"
-          base64_encoded="${base64_encoded}${padding}"
-        fi
-        decoded="$(base64 -d <<<"${base64_encoded}" | jq -c .)"
-        echo "json=${decoded}" >> "${GITHUB_OUTPUT}"
-        echo "::endgroup::"
       shell: bash
 
     - name: Decode payload
@@ -77,15 +55,6 @@ runs:
         fi
         decoded="$(base64 -d <<<"${base64_encoded}" | jq -c .)"
         echo "json=${decoded}" >> "${GITHUB_OUTPUT}"
-        echo "::endgroup::"
-      shell: bash
-
-    - name: Show header
-      env:
-        HEADER: ${{ steps.header.outputs.json }}
-      run: |
-        echo "::group::Show header"
-        jq . <<<"${HEADER}"
         echo "::endgroup::"
       shell: bash
 

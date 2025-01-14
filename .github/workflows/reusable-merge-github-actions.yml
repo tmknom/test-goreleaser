@@ -45,7 +45,6 @@ jobs:
       - name: Checkout
         uses: tmknom/checkout-action@v1
 
-      # TODO Error: PR is not from Dependabot, nothing to do.
       - name: Fetch metadata
         id: metadata
         uses: dependabot/fetch-metadata@dbb049abf0d677abbd7f7eee0375145b417fdd34 # v2.2.0
@@ -56,26 +55,14 @@ jobs:
           enum: github_actions
           value: ${{ steps.metadata.outputs.package-ecosystem }}
 
-      - name: Check mergeable
+      - name: Check Mergeable
         id: check
-        env:
-          PATCH: ${{ inputs.patch }}
-          MINOR: ${{ inputs.minor }}
-          MAJOR: ${{ inputs.major }}
-          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
-        run: |
-          set -x
-          mergeable=false
-          if [[ "${UPDATE_TYPE}" == "version-update:semver-patch" && "${PATCH}" == "true" ]]; then
-            mergeable=true
-          fi
-          if [[ "${UPDATE_TYPE}" == "version-update:semver-minor" && "${MINOR}" == "true" ]]; then
-            mergeable=true
-          fi
-          if [[ "${UPDATE_TYPE}" == "version-update:semver-major" && "${MAJOR}" == "true" ]]; then
-            mergeable=true
-          fi
-          echo "mergeable=${mergeable}" >> "${GITHUB_OUTPUT}"
+        uses: tmknom/check-mergeable-action@feat/add-action
+        with:
+          update-type: ${{ steps.metadata.outputs.update-type }}
+          patch: ${{ inputs.patch }}
+          minor: ${{ inputs.minor }}
+          major: ${{ inputs.major }}
 
       - name: Approve PR
         if: ${{ steps.check.outputs.mergeable == 'true' }}

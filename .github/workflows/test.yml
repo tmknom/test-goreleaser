@@ -15,81 +15,72 @@ defaults:
     shell: bash
 
 jobs:
-  test:
-    name: Test
+  test-mergeable:
+    name: Test mergeable ${{ matrix.case }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
-      contents: write
-      pull-requests: write
-      id-token: write
-      packages: write
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - case: patch
+            update-type: version-update:semver-patch
+          - case: minor
+            update-type: version-update:semver-minor
+          - case: major
+            update-type: version-update:semver-major
     steps:
-      - name: Checkout default branch
-        uses: tmknom/checkout-action@v1
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-
-      - name: Git Config
-        uses: tmknom/git-config-action@970621c4819d5a601bbac4a2bcf6f5f80d92a2e6 # v0.2.0
-
-      - name: Private Generate GitHub Token
-        id: gha
-        uses: tmknom/private-generate-github-token-action@4c7789e087fbab67f1e9e7eeb0312c1a27eb2ef3 # v0.1.2
-        with:
-          repositories: test-goreleaser
-
-      - name: Setup
-        id: setup
-        env:
-          GITHUB_TOKEN: ${{ steps.gha.outputs.token }}
-        run: |
-          set -x
-          base_branch="pseudo-base/${GITHUB_JOB}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          pr_branch="pseudo-pr/${GITHUB_JOB}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          echo "base-branch=${base_branch}" >> "${GITHUB_OUTPUT}"
-          echo "pr-branch=${pr_branch}" >> "${GITHUB_OUTPUT}"
-
-          git switch -c "${base_branch}"
-          git push origin "${base_branch}"
-
-          title="dummy: approve to ${pr_branch}"
-          git switch -c "${pr_branch}" "${base_branch}"
-          git commit -m "${title}" --allow-empty
-          git push origin "${pr_branch}"
-          gh pr create --base "${base_branch}" --head "${pr_branch}" --title "${title}" --body ""
-
       - name: Checkout
         uses: tmknom/checkout-action@v1
 
       - name: Exercise
-        uses: tmknom/approve-pr-action@feat/add-action
+        id: exercise
+        uses: tmknom/check-mergeable-action@feat/add-action
         with:
-          pull-request: ${{ steps.setup.outputs.pr-branch }}
+          update-type: ${{ matrix.update-type }}
+          patch: true
+          minor: true
+          major: true
 
       - name: Verify
         env:
-          PR_BRANCH: ${{ steps.setup.outputs.pr-branch }}
-          GITHUB_TOKEN: ${{ github.token }}
+          MERGEABLE: ${{ steps.exercise.outputs.mergeable }}
         run: |
           set -x
-          result="$(gh pr view "${PR_BRANCH}" --json reviews --jq '.reviews[].state')"
-          test "${result}" = "APPROVED"
+          test "${MERGEABLE}" = "true"
 
-      - name: Teardown
-        if: ${{ always() }}
-        env:
-          BASE_BRANCH: ${{ steps.setup.outputs.base-branch }}
-          PR_BRANCH: ${{ steps.setup.outputs.pr-branch }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          set -x
-          gh pr close "${PR_BRANCH}" || true
-          git push origin "${PR_BRANCH}" --delete || true
-          git push origin "${BASE_BRANCH}" --delete || true
+  test-not-mergeable:
+    name: Test not mergeable ${{ matrix.case }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        include:
+          - case: patch
+            update-type: version-update:semver-patch
+          - case: minor
+            update-type: version-update:semver-minor
+          - case: major
+            update-type: version-update:semver-major
+    steps:
+      - name: Checkout
+        uses: tmknom/checkout-action@v1
 
-      - name: Revoke GitHub Token
-        if: ${{ always() }}
-        uses: tmknom/revoke-github-token-action@3ab58f0a8cc1f0911d071e243343bc0a003d0d1b # v0.1.0
+      - name: Exercise
+        id: exercise
+        uses: tmknom/check-mergeable-action@feat/add-action
         with:
-          token: ${{ steps.gha.outputs.token }}
+          update-type: ${{ matrix.update-type }}
+          patch: false
+          minor: false
+          major: false
+
+      - name: Verify
+        env:
+          MERGEABLE: ${{ steps.exercise.outputs.mergeable }}
+        run: |
+          set -x
+          test "${MERGEABLE}" = "false"
