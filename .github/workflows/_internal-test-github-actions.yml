@@ -50,17 +50,18 @@ jobs:
       - name: Create dependabot branch
         id: dependabot
         env:
-          COMMIT_MESSAGE_FILE: .github/fixtures/github-actions.txt
-          DEPENDABOT_BRANCH: dependabot/github_actions/actions/checkout2-4.2.2
+          PACKAGE_ECOSYSTEM: github_actions
+          COMMIT_MESSAGE_FILE: .github/fixtures/github_actions.txt
           BASE_BRANCH: ${{ steps.base.outputs.branch }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
-          echo "branch=${DEPENDABOT_BRANCH}" >> "${GITHUB_OUTPUT}"
-          git switch -c "${DEPENDABOT_BRANCH}" "${BASE_BRANCH}"
+          branch="dependabot/${PACKAGE_ECOSYSTEM}/pseudo/repo/${GITHUB_JOB}${GITHUB_RUN_ID}${GITHUB_RUN_ATTEMPT}-1.2.3"
+          echo "branch=${branch}" >> "${GITHUB_OUTPUT}"
+          git switch -c "${branch}" "${BASE_BRANCH}"
           git commit -m "$(cat "${COMMIT_MESSAGE_FILE}")" --allow-empty
-          git push origin "${DEPENDABOT_BRANCH}"
-          gh pr create --base "${BASE_BRANCH}" --head "${DEPENDABOT_BRANCH}" --fill-first
+          git push origin "${branch}"
+          gh pr create --base "${BASE_BRANCH}" --head "${branch}" --fill-first
 
   exercise:
     needs: [setup]
