@@ -49,7 +49,7 @@ jobs:
         id: metadata
         uses: dependabot/fetch-metadata@dbb049abf0d677abbd7f7eee0375145b417fdd34 # v2.2.0
         with:
-          skip-verification: ${{ github.actor == github.repository_owner }}
+          skip-verification: ${{ inputs.github-actor == github.repository_owner }}
 
       - name: Validate package ecosystem
         uses: tmknom/validation-action@f654c365b696d6053efe5fb299e8d6ea2bb9f3c8 # v0.3.0
