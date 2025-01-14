@@ -36,7 +36,7 @@ jobs:
 
       - name: Exercise
         id: exercise
-        uses: tmknom/check-mergeable-action@feat/add-action
+        uses: tmknom/validate-dependabot-mergeable-action@feat/add-action
         with:
           update-type: ${{ matrix.update-type }}
           patch: true
@@ -71,7 +71,7 @@ jobs:
 
       - name: Exercise
         id: exercise
-        uses: tmknom/check-mergeable-action@feat/add-action
+        uses: tmknom/validate-dependabot-mergeable-action@feat/add-action
         with:
           update-type: ${{ matrix.update-type }}
           patch: false
