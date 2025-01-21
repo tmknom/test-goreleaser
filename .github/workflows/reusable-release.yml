@@ -42,7 +42,7 @@ jobs:
 
       - name: Encrypt token
         id: encrypt
-        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
+        uses: tmknom/symmetric-encrypt-decrypt-action@f82452a36a04ec4b4215dd92d7958cdae5f9a620 # v0.1.3
         with:
           data: ${{ steps.private.outputs.token }}
           operation: encrypt
@@ -91,7 +91,7 @@ jobs:
 
       - name: Decrypt token
         id: decrypt
-        uses: tmknom/symmetric-encrypt-decrypt-action@7b99754b4745d076fee506388900124b777880d3 # v0.1.2
+        uses: tmknom/symmetric-encrypt-decrypt-action@f82452a36a04ec4b4215dd92d7958cdae5f9a620 # v0.1.3
         with:
           data: ${{ needs.prepare.outputs.token }}
           operation: decrypt
