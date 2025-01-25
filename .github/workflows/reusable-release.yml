@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Private Generate GitHub Token
         id: private
-        uses: tmknom/private-generate-github-token-action@5c20840eb763bac6f4d140eb31b44a92fb17273d # v0.3.0
+        uses: tmknom/private-generate-github-token-action@41cba24e4afced942f1cebdb7b7bd7335b97e275 # v0.3.1
         with:
           repositories: ${{ inputs.homebrew-tap-repository }}
 
@@ -89,6 +89,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
 
+      - name: Retrieve OIDC Token
+        id: oidc
+        uses: tmknom/retrieve-oidc-token-action@4c373152cedf7f42b1e496e245236449d8d57121 # v0.2.1
+
       - name: Decrypt token
         id: decrypt
         uses: tmknom/symmetric-encrypt-decrypt-action@f82452a36a04ec4b4215dd92d7958cdae5f9a620 # v0.1.3
@@ -100,9 +104,10 @@ jobs:
         id: goreleaser
         uses: tmknom/cross-goreleaser-action@38567c2b631cff9b71542e2861b52e4e7777418b # v0.2.1
         with:
-          configuration-url: https://raw.githubusercontent.com/tmknom/configurations/f4ae6b15c5849697884224c6e8e4f83ba36f982c/goreleaser/verifiable.yml # v0.4.1
+          configuration-path: .goreleaser.yml
           homebrew-tap-repository: ${{ inputs.homebrew-tap-repository }}
           homebrew-tap-github-token: ${{ steps.decrypt.outputs.result }}
+          # configuration-url: https://raw.githubusercontent.com/tmknom/configurations/f4ae6b15c5849697884224c6e8e4f83ba36f982c/goreleaser/verifiable.yml # v0.4.1
 
       - name: Revoke GitHub Token
         if: ${{ always() }}
@@ -138,10 +143,189 @@ jobs:
           path: dist/
           retention-days: 1
 
+      - name: Generate footer of release notes
+        id: footer
+        env:
+          VERSION_TAG: ${{ steps.bump.outputs.version }}
+          IMAGE_DIGEST: ${{ steps.metadata.outputs.manifest-digest }}
+          CERTIFICATE_IDENTITY: ${{ github.server_url }}/${{ steps.oidc.outputs.job_workflow_ref }}
+          CERTIFICATE_OIDC_ISSUER: https://token.actions.githubusercontent.com
+        run: |
+          set -x
+          name="${GITHUB_REPOSITORY#${GITHUB_REPOSITORY_OWNER}/}"
+          version="${VERSION_TAG#v}"
+          footer_file="${RUNNER_TEMP}/footer_release_notes.md"
+          echo "file=${footer_file}" >> "${GITHUB_OUTPUT}"
+
+          cat <<EOF >>"${footer_file}"
+          ---
+
+          ## Installation
+
+          Official binaries can be downloaded from ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases .
+          We support popular operating systems such as Linux, Windows, and macOS, as well as CPU architectures like amd64 and arm64.
+
+          ### Manual Installation
+
+          Download the binary for your operating system and architecture, make it executable, and move it to a directory in your `PATH`.
+          For example, on AMD64 Linux, run the following commands:
+
+          \`\`\`shell
+          curl -sSL -o ${name} "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${version}/${name}_${version}_linux_amd64"
+          chmod +x ${name}
+          sudo mv ${name} /usr/local/bin/${name}
+          \`\`\`
+
+          ### Homebrew Installation
+
+          \`\`\`shell
+          brew install tmknom/tap/${name}
+          \`\`\`
+
+          ### DEB Installation
+
+          Download the `.deb` package for your architecture (e.g., `*_linux_amd64.deb` or `*_linux_arm64.deb`), then install it using the `dpkg` command:
+
+          \`\`\`shell
+          curl -sSL -o ${name}.deb "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${version}/${name}_${version}_linux_amd64.deb"
+          dpkg -i ${name}.deb
+          \`\`\`
+
+          ### RPM Installation
+
+          Download the `.rpm` package for your architecture (e.g., `*_linux_amd64.rpm` or `*_linux_arm64.rpm`), then install it using the `rpm` command:
+
+          \`\`\`shell
+          curl -sSL -o ${name}.rpm "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${version}/${name}_${version}_linux_amd64.rpm"
+          rpm -ivh ${name}.rpm
+          \`\`\`
+
+          ### APK Installation
+
+          Download the `.apk` package for your architecture (e.g., `*_linux_amd64.apk` or `*_linux_arm64.apk`), then install it using the `apk` command:
+
+          \`\`\`shell
+          curl -sSL -o ${name}.apk "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/download/${version}/${name}_${version}_linux_amd64.apk"
+          apk add --allow-untrusted ${name}.apk
+          \`\`\`
+
+          ## Verification
+
+          All artifacts are checksummed, and signed by Cosign using identity-based ("keyless") signing and transparency.
+
+          ### Checksum verification
+
+          1. Install [GitHub CLI](https://cli.github.com/) and [Cosign](https://github.com/sigstore/cosign) if not already available.
+          2. Download all artifacts using GitHub CLI:
+              \`\`\`shell
+              gh release download ${VERSION_TAG}
+              \`\`\`
+          3. Verify the signature using:
+              \`\`\`shell
+              cosign verify-blob \\
+                --signature "${name}_${version}_checksums.txt.sig" \\
+                --certificate "${name}_${version}_checksums.txt.pem" \\
+                --certificate-oidc-issuer "${CERTIFICATE_OIDC_ISSUER}" \\
+                --certificate-identity "${CERTIFICATE_IDENTITY}" \\
+                --certificate-github-workflow-repository "${GITHUB_REPOSITORY}" \\
+                --certificate-github-workflow-sha "${GITHUB_SHA}" \\
+                "${name}_${version}_checksums.txt"
+              \`\`\`
+          4. Verify the checksum of the downloaded files using:
+              \`\`\`shell
+              sha256sum --ignore-missing -c "${name}_${version}_checksums.txt"
+              \`\`\`
+              Ensure that the output indicates a valid match.
+
+          ### Cosign verification
+
+          You can verify all artifacts, such as executable binaries, Linux packages, checksum files, and SBOMs.
+          For example, the `linux/amd64` binary:
+
+          1. Install [Cosign](https://github.com/sigstore/cosign) if not already available.
+          2. Verify the signature using:
+              \`\`\`shell
+              cosign verify-blob \\
+                --signature "${name}_${version}_linux_amd64.sig" \\
+                --certificate "${name}_${version}_linux_amd64.pem" \\
+                --certificate-oidc-issuer "${CERTIFICATE_OIDC_ISSUER}" \\
+                --certificate-identity "${CERTIFICATE_IDENTITY}" \\
+                --certificate-github-workflow-repository "${GITHUB_REPOSITORY}" \\
+                --certificate-github-workflow-sha "${GITHUB_SHA}" \\
+                "${name}_${version}_linux_amd64"
+              \`\`\`
+
+          ### GitHub Artifact Attestations verification
+
+          You can verify all artifacts, such as executable binaries, Linux packages, checksum files, and SBOMs.
+          For example, the `linux/amd64` binary:
+
+          1. Install [GitHub CLI](https://cli.github.com/) if not already available.
+          2. Verify the attestation:
+              \`\`\`shell
+              gh attestation verify "${name}_${version}_linux_amd64" \\
+                --deny-self-hosted-runners \\
+                --repo "${GITHUB_REPOSITORY}" \\
+                --cert-oidc-issuer "${CERTIFICATE_OIDC_ISSUER}" \\
+                --cert-identity "${CERTIFICATE_IDENTITY}"
+              \`\`\`
+
+          ## Container Images
+
+          - https://github.com/${GITHUB_REPOSITORY}/pkgs/container/${name}
+
+          ### Pull image tag
+
+          \`\`\`shell
+          docker pull ghcr.io/${GITHUB_REPOSITORY}:${VERSION_TAG}
+          \`\`\`
+
+          ### Pull image digest
+
+          \`\`\`shell
+          docker pull ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_DIGEST}
+          \`\`\`
+
+          ### Cosign verification
+
+          You can verify container images using Cosign.
+
+          1. Install [Cosign](https://github.com/sigstore/cosign) if not already available.
+          2. Verify the signature using:
+              \`\`\`shell
+              cosign verify \\
+                --certificate-oidc-issuer "${CERTIFICATE_OIDC_ISSUER}" \\
+                --certificate-identity "${CERTIFICATE_IDENTITY}" \\
+                --certificate-github-workflow-repository "${GITHUB_REPOSITORY}" \\
+                --certificate-github-workflow-sha "${GITHUB_SHA}" \\
+                ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_DIGEST}
+              \`\`\`
+
+          ### GitHub Artifact Attestations verification
+
+          You can verify container images using GitHub Artifact Attestations.
+
+          1. Install [GitHub CLI](https://cli.github.com/) if not already available.
+          2. Verify the attestation:
+              \`\`\`shell
+              gh attestation verify oci://ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_DIGEST} \\
+                --deny-self-hosted-runners \\
+                --repo "${GITHUB_REPOSITORY}" \\
+                --cert-oidc-issuer "${CERTIFICATE_OIDC_ISSUER}" \\
+                --cert-identity "${CERTIFICATE_IDENTITY}"
+              \`\`\`
+          EOF
+
+          cat "${footer_file}" >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Publish release
         env:
+          FOOTER_FILE: ${{ steps.footer.outputs.file }}
           VERSION_TAG: ${{ steps.bump.outputs.version }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -x
-          gh release edit "${VERSION_TAG}" --draft=false
+          notes_file="${RUNNER_TEMP}/release_notes.md"
+          gh release view "${VERSION_TAG}" --json "body" --jq ".body" >> "${notes_file}"
+          cat "${FOOTER_FILE}" >> "${notes_file}"
+          gh release edit "${VERSION_TAG}" --draft=false --notes-file "${notes_file}"

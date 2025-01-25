@@ -1,0 +1,168 @@
+version: 2
+
+before:
+  hooks:
+    - go generate ./...
+    - go mod tidy
+    - git --no-pager diff --exit-code go.mod go.sum
+
+report_sizes: true
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
+gomod:
+  proxy: true
+
+builds:
+  - main: ./cmd/{{ .ProjectName }}
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.name={{ .ProjectName }}
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .FullCommit }}
+      - -X main.date={{ .CommitDate }}
+      - -X main.url={{ .GitURL }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - format: binary
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    builds_info:
+      mtime: "{{ .CommitDate }}"
+
+nfpms:
+  - package_name: "{{ .ProjectName }}"
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
+    homepage: "{{ .GitURL }}"
+    maintainer: "{{ .Env.GITHUB_REPOSITORY_OWNER }} {{ .Env.GITHUB_REPOSITORY_OWNER_ID }}+{{ .Env.GITHUB_REPOSITORY_OWNER }}@users.noreply.github.com"
+    description: "{{ .ProjectName }} {{ .Version }}"
+    license: "Apache License 2.0"
+    formats:
+      - deb
+      - rpm
+      - apk
+
+brews:
+  - repository:
+      owner: "{{ .Env.GITHUB_REPOSITORY_OWNER }}"
+      name: "{{ if isEnvSet \"HOMEBREW_TAP_REPOSITORY\" }}{{ .Env.HOMEBREW_TAP_REPOSITORY }}{{ else }}homebrew-tap{{ end }}"
+      branch: update/{{ .ProjectName }}_{{ .Version }}
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      pull_request:
+        enabled: true
+    commit_author:
+      name: github-actions[bot]
+      email: 41898282+github-actions[bot]@users.noreply.github.com
+    directory: Formula
+    homepage: "{{ .GitURL }}"
+    description: "{{ .ProjectName }} {{ .Version }}"
+    license: Apache-2.0
+    test: |
+      system "#{bin}/{{ .ProjectName }} --version"
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+dockers:
+  - image_templates:
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-amd64"
+    use: buildx
+    goos: linux
+    goarch: amd64
+    skip_push: false
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description={{ .ProjectName }} {{ .Version }}"
+      - "--label=org.opencontainers.image.created={{ .CommitDate }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.url={{ .ReleaseURL }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.documentation={{ .GitURL }}/blob/main/README.md"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
+      - "--platform=linux/amd64"
+  - image_templates:
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-arm64"
+    use: buildx
+    goos: linux
+    goarch: arm64
+    skip_push: false
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--pull"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description={{ .ProjectName }} {{ .Version }}"
+      - "--label=org.opencontainers.image.created={{ .CommitDate }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.url={{ .ReleaseURL }}"
+      - "--label=org.opencontainers.image.source={{ .GitURL }}"
+      - "--label=org.opencontainers.image.documentation={{ .GitURL }}/blob/main/README.md"
+      - "--label=org.opencontainers.image.licenses=Apache-2.0"
+      - "--platform=linux/arm64"
+
+docker_manifests:
+  - name_template: "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:latest"
+    image_templates:
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-amd64"
+      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/{{ .ProjectName }}:{{ .Tag }}-arm64"
+
+signs:
+  - cmd: cosign
+    artifacts: all
+    signature: ${artifact}.sig
+    certificate: ${artifact}.pem
+    output: true
+    args:
+      - sign-blob
+      - --output-signature=${signature}
+      - --output-certificate=${certificate}
+      - --oidc-issuer=https://token.actions.githubusercontent.com
+      - --oidc-provider=github-actions
+      - --yes
+      - ${artifact}
+
+docker_signs:
+  - cmd: cosign
+    artifacts: all
+    output: true
+    args:
+      - sign
+      - --oidc-issuer=https://token.actions.githubusercontent.com
+      - --oidc-provider=github-actions
+      - --yes
+      - ${artifact}@${digest}
+
+sboms:
+  - id: binary
+    artifacts: binary
+    documents:
+      - "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}.sbom.json"
+  - id: package
+    artifacts: package
+
+changelog:
+  use: github-native
+
+release:
+  mode: append
+  draft: true
