@@ -283,7 +283,7 @@ jobs:
           ### Pull image digest
 
           \`\`\`shell
-          docker pull ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_DIGEST}
+          docker pull ghcr.io/${GITHUB_REPOSITORY}@${IMAGE_DIGEST}
           \`\`\`
 
           ### Cosign verification
@@ -298,7 +298,7 @@ jobs:
                 --certificate-identity "${CERTIFICATE_IDENTITY}" \\
                 --certificate-github-workflow-repository "${GITHUB_REPOSITORY}" \\
                 --certificate-github-workflow-sha "${GITHUB_SHA}" \\
-                ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_DIGEST}
+                ghcr.io/${GITHUB_REPOSITORY}@${IMAGE_DIGEST}
               \`\`\`
 
           ### GitHub Artifact Attestations verification
@@ -308,7 +308,7 @@ jobs:
           1. Install [GitHub CLI](https://cli.github.com/) if not already available.
           2. Verify the attestation:
               \`\`\`shell
-              gh attestation verify oci://ghcr.io/${GITHUB_REPOSITORY}:${IMAGE_DIGEST} \\
+              gh attestation verify oci://ghcr.io/${GITHUB_REPOSITORY}@${IMAGE_DIGEST} \\
                 --deny-self-hosted-runners \\
                 --repo "${GITHUB_REPOSITORY}" \\
                 --cert-oidc-issuer "${CERTIFICATE_OIDC_ISSUER}" \\

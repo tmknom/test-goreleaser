@@ -37,7 +37,7 @@ builds:
     mod_timestamp: "{{ .CommitTimestamp }}"
 
 archives:
-  - format: binary
+  - formats: binary
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     builds_info:
       mtime: "{{ .CommitDate }}"
