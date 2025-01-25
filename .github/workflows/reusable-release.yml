@@ -104,10 +104,10 @@ jobs:
         id: goreleaser
         uses: tmknom/cross-goreleaser-action@38567c2b631cff9b71542e2861b52e4e7777418b # v0.2.1
         with:
-          configuration-path: .goreleaser.yml
+          configuration-url: https://raw.githubusercontent.com/tmknom/configurations/06d49c39013617310276b557ca26d6e6888557b9/goreleaser/verifiable.yml # v0.5.0
           homebrew-tap-repository: ${{ inputs.homebrew-tap-repository }}
           homebrew-tap-github-token: ${{ steps.decrypt.outputs.result }}
-          # configuration-url: https://raw.githubusercontent.com/tmknom/configurations/f4ae6b15c5849697884224c6e8e4f83ba36f982c/goreleaser/verifiable.yml # v0.4.1
+          # configuration-path: .goreleaser.yml
 
       - name: Revoke GitHub Token
         if: ${{ always() }}
