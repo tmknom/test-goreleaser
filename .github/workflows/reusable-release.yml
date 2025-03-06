@@ -116,7 +116,7 @@ jobs:
           token: ${{ steps.decrypt.outputs.result }}
 
       - name: Attest binaries
-        uses: actions/attest-build-provenance@bd77c077858b8d561b7a36cbe48ef4cc642ca39d # v2.2.2
+        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
         with:
           subject-path: dist/
 
@@ -130,7 +130,7 @@ jobs:
           echo "manifest-digest=${manifest_digest}" >> "${GITHUB_OUTPUT}"
 
       - name: Attest container images
-        uses: actions/attest-build-provenance@bd77c077858b8d561b7a36cbe48ef4cc642ca39d # v2.2.2
+        uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2 # v2.2.3
         with:
           subject-name: ghcr.io/${{ github.repository }}
           subject-digest: ${{ steps.metadata.outputs.manifest-digest }}
