@@ -18,7 +18,7 @@ permissions: {}
 
 jobs:
   call:
-    uses: tmknom/release-workflows/.github/workflows/go.yml@93b8daa06cc311012d49ac78b3efeaf6509ead94 # v0.12.0
+    uses: tmknom/release-workflows/.github/workflows/go.yml@92c6d4cead2f5f4b097425af15d7128ef2414d40 # v0.12.1
     # uses: ./.github/workflows/reusable-release.yml
     # uses: tmknom/test-goreleaser/.github/workflows/reusable-release.yml@e61bbb91c60bef62eb146237819a8c48ace314f0 # v0.26.1
     # uses: tmknom/release-workflows/.github/workflows/go.yml@main
