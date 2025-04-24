@@ -36,7 +36,7 @@ jobs:
     steps:
       - name: Private Generate GitHub Token
         id: private
-        uses: tmknom/private-generate-github-token-action@009082a8acf3aaaf20e06b2a6f0b190191564b6c # v0.3.5
+        uses: tmknom/private-generate-github-token-action@5d85705b84d8fff1e4912844cc71e23aacb2d8df # v0.3.6
         with:
           repositories: ${{ inputs.homebrew-tap-repository }}
 
